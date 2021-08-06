@@ -15,6 +15,7 @@ lta_parser : argparse.ArgumentParser
     The argument parser for the root command.
 """
 import argparse
+from pathlib import Path
 
 from lta import __version__
 from lta.commands.simple import simple
@@ -22,6 +23,7 @@ from lta.commands.simple import simple
 lta_parser = argparse.ArgumentParser(
     prog="lta", description="Lipid Trafficking Analysis"
 )
+
 lta_parser.add_argument(
     "-V",
     "--version",
@@ -29,12 +31,17 @@ lta_parser.add_argument(
     version=f"LTA v{__version__}",
     help="Display version information and exit.",
 )
+
 lta_parser.add_argument(
-    "-t",
-    "--text",
-    const="nope",
-    default="hello world",
-    nargs="?",
-    help="The text to print.",
+    "data",
+    type=Path,
+    help="Location of the data files.",
 )
+
+lta_parser.add_argument(
+    "output",
+    type=Path,
+    help="Where to write output file.",
+)
+
 lta_parser.set_defaults(func=simple)
