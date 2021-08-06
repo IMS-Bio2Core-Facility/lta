@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Nox session configuration."""
-import tempfile
+import os
 from typing import Any, List
 
 import nox
@@ -24,17 +24,17 @@ nox.options.reuse_existing_virtualenvs = False
 
 def constrained_install(session: Session, *args: str, **kwargs: Any) -> None:
     """Install packages with poetry version constraint."""
-    with tempfile.NamedTemporaryFile() as reqs:
-        session.run(
-            "poetry",
-            "export",
-            "--dev",
-            "--without-hashes",
-            "--format=requirements.txt",
-            f"--output={reqs.name}",
-            external=True,
-        )
-        session.install(f"--constraint={reqs.name}", *args, **kwargs)
+    session.run(
+        "poetry",
+        "export",
+        "--dev",
+        "--without-hashes",
+        "--format=requirements.txt",
+        "--output=requirements.txt",
+        external=True,
+    )
+    session.install("--constraint=requirements.txt", *args, **kwargs)
+    os.remove("requirements.txt")
 
 
 @nox.session(python="3.9")
@@ -77,18 +77,18 @@ def type(session: Session) -> None:
 @nox.session(python=VERSIONS)
 def security(session: Session) -> None:
     """Check security safety."""
-    constrained_install(session, "safety")
-    with tempfile.NamedTemporaryFile() as reqs:
-        session.run(
-            "poetry",
-            "export",
-            "--dev",
-            "--without-hashes",
-            "--format=requirements.txt",
-            f"--output={reqs.name}",
-            external=True,
-        )
-        session.run("safety", "check", f"--file={reqs.name}", "--full-report")
+    session.run(
+        "poetry",
+        "export",
+        "--dev",
+        "--without-hashes",
+        "--format=requirements.txt",
+        "--output=requirements.txt",
+        external=True,
+    )
+    session.install("--constraint=requirements.txt", "safety")
+    session.run("safety", "check", "--file=requirements.txt", "--full-report")
+    os.remove("requirements.txt")
 
 
 @nox.session(python=VERSIONS)
