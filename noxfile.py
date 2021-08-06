@@ -74,7 +74,7 @@ def type(session: Session) -> None:
     session.run("mypy", "--ignore-missing-imports", *args)
 
 
-@nox.session(python=VERSIONS)
+@nox.session(python="3.9")
 def security(session: Session) -> None:
     """Check security safety."""
     session.run(
