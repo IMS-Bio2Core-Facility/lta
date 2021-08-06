@@ -9,8 +9,8 @@ from lta.commands.simple import simple
 
 def test_prints_text(capsys: capture.CaptureFixture) -> None:
     """It prints the text."""
-    args = argparse.Namespace(text="Hello World")
+    args = argparse.Namespace(data="data", output="results")
     simple(args)
     out, err = capsys.readouterr()
     assert err == "", "The simple call errored."
-    assert out == "Hello World\n", "Simple did not print the write text."
+    assert out == "data results\n", "Simple did not print the write text."

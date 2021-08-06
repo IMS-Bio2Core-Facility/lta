@@ -17,8 +17,8 @@ from lta.commands.simple import simple
 
 def test_echoes_text(capsys: capture.CaptureFixture) -> None:
     """The CLI prints text passed to it."""
-    args = argparse.Namespace(func=simple, text="Success!")
+    args = argparse.Namespace(func=simple, data="data", output="results")
     main(args)
     out, err = capsys.readouterr()
     assert err == "", "The main call errored."
-    assert out == "Success!\n", "The main call echoed the wrong text."
+    assert out == "data results\n", "The main call echoed the wrong text."
