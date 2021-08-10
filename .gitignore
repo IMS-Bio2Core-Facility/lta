@@ -140,3 +140,5 @@ cython_debug/
 # Other
 .DS_store
 scratch.*
+data/
+results/
