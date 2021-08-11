@@ -19,6 +19,7 @@ from pathlib import Path
 
 from lta import __version__
 from lta.commands.simple import simple
+from lta.helpers.custom_types import FloatRange
 
 lta_parser = argparse.ArgumentParser(
     prog="lta", description="Lipid Trafficking Analysis"
@@ -44,11 +45,13 @@ lta_parser.add_argument(
     help="Where to write output file.",
 )
 
-# Next support floats between 0 and 1
+# The type ignore silence mypy.
+# Since we are checking, not iterating, a proper __iter__ is unnecessary
 lta_parser.add_argument(
     "-t",
     "--threshold",
     type=float,
+    choices=FloatRange(0, 1),  # type: ignore
     nargs=1,
     default=0.2,
 )
