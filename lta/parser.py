@@ -10,7 +10,7 @@ please see the README.
 A short overview is given here.
 
 The location of the input data is the first positional argument,
-while the location to which the output files should be saved is the second possitional.
+while the location to which the output files should be saved is the second positional.
 The "0" threshold is specified with option ``-t/--threshold``.
 This should be passed as a floating point number between 0 and 1, inclusive.
 If it is not provided,
@@ -28,7 +28,7 @@ import argparse
 from pathlib import Path
 
 from lta import __version__
-from lta.commands.simple import simple
+from lta.commands.run import run
 from lta.helpers.custom_types import FloatRange
 
 lta_parser = argparse.ArgumentParser(
@@ -44,7 +44,7 @@ lta_parser.add_argument(
 )
 
 lta_parser.add_argument(
-    "data",
+    "folder",
     type=Path,
     help="Location of the data files.",
 )
@@ -66,4 +66,4 @@ lta_parser.add_argument(
     default=0.2,
 )
 
-lta_parser.set_defaults(func=simple)
+lta_parser.set_defaults(func=run)
