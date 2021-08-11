@@ -44,4 +44,13 @@ lta_parser.add_argument(
     help="Where to write output file.",
 )
 
+# Next support floats between 0 and 1
+lta_parser.add_argument(
+    "-t",
+    "--threshold",
+    type=float,
+    nargs=1,
+    default=0.2,
+)
+
 lta_parser.set_defaults(func=simple)
