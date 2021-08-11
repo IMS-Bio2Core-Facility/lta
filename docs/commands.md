@@ -7,7 +7,7 @@
 commands.simple
 ---------------
 
-.. automodule:: lta.commands.simple
+.. automodule:: lta.commands.run
    :members:
    :private-members:
 ```
