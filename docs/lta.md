@@ -8,6 +8,8 @@ Currently, the source code is divided as follows:
   See [parser](./parser.md).
 - `commands` sub-package that contains the functions used to handle inputs.
   See [commands](./commands.md).
+- `helpers` sub-package that contains a number of bits designed to streamline the CLI.
+  See [helpers](./helpers.md).
 
 ```{toctree}
 :hidden:
@@ -16,4 +18,5 @@ Currently, the source code is divided as follows:
 cli
 parser
 commands
+helpers
 ```

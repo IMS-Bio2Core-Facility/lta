@@ -5,9 +5,19 @@ Functionality will be added during on-going refactoring from R.
 
 The current code represents a minimum functioning command.
 
-Like all good CLIs, `-V/--version` returns the version while `-h/--help` help for the
-root command. Help for the subcommands can be found by calling `-h` after a subcommand,
-like this: `lta sub -h`.
+For a detailed description of the tool and how to use it,
+please see the README.
+A short overview is given here.
+
+The location of the input data is the first positional argument,
+while the location to which the output files should be saved is the second possitional.
+The "0" threshold is specified with option ``-t/--threshold``.
+This should be passed as a floating point number between 0 and 1, inclusive.
+If it is not provided,
+then a default of 0.2 is used.
+
+Like all good CLIs,
+``-V/--version`` returns the version while ``-h/--help`` returns help.
 
 Attributes
 ----------
