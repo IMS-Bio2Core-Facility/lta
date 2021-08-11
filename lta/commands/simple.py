@@ -13,4 +13,4 @@ def simple(args: argparse.Namespace) -> None:
     args: argparse.Namespace
         The passed args.
     """
-    print(args.data, args.output)
+    print(args.data, args.output, args.threshold)
