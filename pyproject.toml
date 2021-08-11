@@ -44,7 +44,6 @@ tomli = "^1.2.0"
 pytest-clarity = "^1.0.1"
 pytest-sugar = "^0.9.4"
 pytest-cov = "^2.12.1"
-typeguard = "^2.12.1"
 xdoctest = "^0.15.5"
 Sphinx = "^4.1.2"
 myst-parser = "^0.15.1"
@@ -81,7 +80,6 @@ addopts = """
 --cov=lta
 --cov-report=term
 --cov-report=xml
---typeguard-packages=lta,lta.commands
 """
 
 [tool.isort]

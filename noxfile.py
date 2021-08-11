@@ -106,7 +106,6 @@ def tests(session: Session) -> None:
         "pytest-mock",
         "requests-mock",
         "pytest-cov",
-        "typeguard",  # Though typing, run best in pytest
     )
     session.run("pytest", *args)
 
