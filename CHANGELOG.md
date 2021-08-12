@@ -2,6 +2,17 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.0 (2021-08-12)
+### Feature
+* **pipeline:** Introduce pipeline class ([`fc9a53e`](https://github.com/IMS-Bio2Core-Facility/lta/commit/fc9a53e9b759bacf2c16caa0d4ce924080c1531e))
+
+### Fix
+* **command:** Remove subscript of float ([`75c7cd6`](https://github.com/IMS-Bio2Core-Facility/lta/commit/75c7cd6a2a59f2b980bec6d276e5f8ce285918e4))
+
+### Documentation
+* **unit-tests:** Add docs for new pipeline tests ([`9994c70`](https://github.com/IMS-Bio2Core-Facility/lta/commit/9994c70e44d75967e6d1dc52b850ef0a2bc28a54))
+* **pipeline:** Document new pipeline module ([`9b1c5a0`](https://github.com/IMS-Bio2Core-Facility/lta/commit/9b1c5a081202871d5e971b10e8eae2cd5347045a))
+
 ## v0.2.0 (2021-08-11)
 ### Feature
 * **helpers:** Add FloatRange type ([`6db2b00`](https://github.com/IMS-Bio2Core-Facility/lta/commit/6db2b00f1bfca9e1a5f5ecf059e47320a957d331))
