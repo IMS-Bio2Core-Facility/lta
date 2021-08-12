@@ -11,10 +11,17 @@ Tests for the parser
    :members:
    :private-members:
 
-Tests for the `simple` command function
----------------------------------------
+Tests for the `run` command function
+------------------------------------
 
-.. automodule:: tests.unit.test_commands_simple
+.. automodule:: tests.unit.test_commands_run
+   :members:
+   :private-members:
+
+Tests for the `pipeline` dataclass
+----------------------------------
+
+.. automodule:: tests.unit.test_helpers_pipeline
    :members:
    :private-members:
 

@@ -1,13 +1,16 @@
-```{eval-rst}
-`helpers` Sub-package
-======================
+# helpers Sub-Package
 
-.. automodule:: lta.helpers
+Currently, the `helpers` sub-package is divided as follows:
 
-helpers.custom_types
---------------------
+- `custom_types` module contains types helfully to argument parsing.
+  See [custom_types](./custom_types.md).
+- `pipeline` module that contains main analysis code.
+  See [pipeline](./pipeline.md).
 
-.. automodule:: lta.helpers.custom_types
-   :members:
-   :private-members:
+```{toctree}
+:hidden:
+:maxdepth: 3
+
+custom_types
+pipeline
 ```
