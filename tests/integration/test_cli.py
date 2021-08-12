@@ -12,13 +12,13 @@ import argparse
 from _pytest import capture
 
 from lta.cli import main
-from lta.commands.simple import simple
+from lta.commands.run import run
 
 
 def test_echoes_text(capsys: capture.CaptureFixture) -> None:
     """The CLI prints text passed to it."""
     args = argparse.Namespace(
-        func=simple, data="data", output="results", threshold=[0.2]
+        func=run, folder="data", output="results", threshold=[0.2]
     )
     main(args)
     out, err = capsys.readouterr()
