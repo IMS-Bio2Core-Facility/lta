@@ -2,6 +2,20 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.0 (2021-08-13)
+### Feature
+* **pipeline:** Add jaccard calculations ([`f17f1e2`](https://github.com/IMS-Bio2Core-Facility/lta/commit/f17f1e2cd1b27f08088651733c517dd346602988))
+* **jaccard:** Implement boolean Jaccard similarity ([`9b828bc`](https://github.com/IMS-Bio2Core-Facility/lta/commit/9b828bcc0706efdb8d6a30fcc6ca812540ab6c4d))
+
+### Fix
+* **command:** Add -b flag ([`8c1c645`](https://github.com/IMS-Bio2Core-Facility/lta/commit/8c1c6452465e1749fecd4d6fc1cb207dec5e0a04))
+* **jaccard:** Divide by abs(j_obs) ([`ca62ff9`](https://github.com/IMS-Bio2Core-Facility/lta/commit/ca62ff92a8f2c2483d7dd5c789dacd3490ed8ef4))
+* **jaccard:** Return when degenerate ([`78831b9`](https://github.com/IMS-Bio2Core-Facility/lta/commit/78831b9b3342d8ffa681c93144d1012c6a48daa4))
+
+### Documentation
+* **parser:** Add new opts to docstring ([`204ee65`](https://github.com/IMS-Bio2Core-Facility/lta/commit/204ee65ed042078a5c9cc2a09915b4fcc3946718))
+* **jaccard:** Add docs to Sphinx ([`387637f`](https://github.com/IMS-Bio2Core-Facility/lta/commit/387637f2a05c76e9ad4ca4dd2cef349d0c5003b4))
+
 ## v0.3.0 (2021-08-12)
 ### Feature
 * **pipeline:** Introduce pipeline class ([`fc9a53e`](https://github.com/IMS-Bio2Core-Facility/lta/commit/fc9a53e9b759bacf2c16caa0d4ce924080c1531e))
