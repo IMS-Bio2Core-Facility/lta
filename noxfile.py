@@ -105,6 +105,7 @@ def tests(session: Session) -> None:
         "pytest-sugar",
         "pytest-mock",
         "pytest-cov",
+        "xdoctest",
     )
     session.run("pytest", *args)
 
