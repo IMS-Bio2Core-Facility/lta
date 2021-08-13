@@ -2,9 +2,11 @@
 """A dataclass that allows for an object oriented pipeline."""
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Set
+from typing import Dict, List, Set
 
 import pandas as pd
+
+import lta.helpers.jaccard as jac
 
 
 @dataclass
@@ -19,11 +21,14 @@ class Pipeline:
         Where to save the results.
     thresh : float
         The fraction of samples that are 0 above which a lipid will be called 0 for a tissue.
+    n : int
+        Number of bootstrap replicates.
     """
 
     folder: Path
     output: Path
     thresh: float
+    n: int
 
     def __post_init__(self) -> None:
         """Post-process parameters.
@@ -116,6 +121,7 @@ class Pipeline:
         Lipids that are non-0 for all tissues in any Phenotype
         are considered A-lipids.
         """
+        self.a_lipids = {}
         for mode in self.modes:
             not_zeros = [
                 (df == 0)
@@ -139,6 +145,29 @@ class Pipeline:
             unified.groupby(axis="rows", level="Category").sum().to_csv(
                 self.output / f"a_lipids_{mode}_counts.csv"
             )
+            self.a_lipids[mode] = unified
+
+    def _jaccard(self, data: Dict[str, pd.DataFrame]) -> None:
+        """Calculate jaccard distances and p-values.
+
+        This takes a dictionary of data. As the output of each group of lipids will be
+        structured as such, if should be called per lipid group.
+
+        Parameters
+        ----------
+        data : Dict[str, pd.DataFrame]
+            A dictionary of modes and lipid data
+        """
+        for mode, lipids in data.items():
+            sim = lipids.groupby(axis="rows", level="Category").apply(
+                lambda df: jac.bootstrap(df.iloc[:, 0], df.iloc[:, 1], n=self.n)
+            )
+            dist = pd.DataFrame(
+                sim.to_list(), index=sim.index, columns=["J_dist", "p-val"]
+            )
+            # Convert from similarity to distance
+            dist["J_dist"] = 1 - dist["J_dist"]
+            dist.to_csv(self.output / f"a_lipids_{mode}_jaccard.csv")
 
     def run(self) -> None:
         """Run the full LTA pipeline.
@@ -147,3 +176,4 @@ class Pipeline:
         as well as the distance between the respective vectors.
         """
         self._get_a_lipids()
+        self._jaccard(self.a_lipids)
