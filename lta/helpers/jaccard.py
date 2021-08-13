@@ -182,5 +182,5 @@ def bootstrap(
         for _ in range(n)
     )
     j_null = np.fromiter(vals, dtype=np.float32, count=n)
-    p_val = (np.abs(j_null, dtype=np.float32, out=j_null) >= j_obs).sum() / n
+    p_val = (np.abs(j_null, dtype=np.float32, out=j_null) >= np.abs(j_obs)).sum() / n
     return j, p_val

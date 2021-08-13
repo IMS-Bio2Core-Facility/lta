@@ -109,4 +109,4 @@ def test_boot() -> None:
     x = np.array([True, True, False], bool)
     y = np.array([True, False, True], bool)
     val = jac.bootstrap(x, y, n=10)
-    np.testing.assert_allclose(val, (1 / 3, 1))
+    np.testing.assert_allclose(val, (1 / 3, 0.6))
