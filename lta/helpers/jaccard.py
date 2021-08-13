@@ -156,27 +156,20 @@ def bootstrap(
     -------
     Tuple[float, float]
         The Jaccard similarity and p_val.
-
-    Raises
-    ------
-    RuntimeError
-        if either column is all 1s or all 0s.
     """
     if not px:
         px = x.mean()
     if not py:
         py = y.mean()
 
-    if px == 1 or py == 1 or len(x) == x.sum() or len(y) == y.sum():
-        raise RuntimeError(
-            "calculation is degenerate as at least one vector is all 1s."
-        )
-    if px == 0 or py == 0 or x.sum() == 0 or y.sum() == 0:
-        raise RuntimeError(
-            "calculation is degenerate as at least one vector is all 0s."
-        )
-
     j = similarity(x, y, center=False, px=px, py=py)
+    if px == 1 or py == 1 or len(x) == x.sum() or len(y) == y.sum():
+        print("Calculation is degenerate as at least one vector is all 1s.")
+        return (j, 1)
+    if px == 0 or py == 0 or x.sum() == 0 or y.sum() == 0:
+        print("Calculation is degenerate as at least one vector is all 0s.")
+        return (j, 1)
+
     j_obs = similarity(x, y, center=True, px=px, py=py)
 
     rng = np.random.default_rng(seed)
