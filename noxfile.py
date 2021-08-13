@@ -19,7 +19,7 @@ VERSIONS: List[str] = [
 ]
 
 nox.options.stop_on_first_error = False
-nox.options.reuse_existing_virtualenvs = False
+nox.options.reuse_existing_virtualenvs = True
 
 
 def constrained_install(session: Session, *args: str, **kwargs: Any) -> None:
@@ -107,35 +107,6 @@ def tests(session: Session) -> None:
         "pytest-cov",
     )
     session.run("pytest", *args)
-
-
-@nox.session(python=VERSIONS)
-def doc_tests(session: Session) -> None:
-    """Test docstrings with xdoctest.
-
-    As xdoctest does not seem to detect if multiple sources are passed,
-    session run must be called over each cource manually.
-
-    Parameters
-    ----------
-    session : Session
-        nox session
-    """
-    args = session.posargs or LOCATIONS
-    command = [
-        "python",
-        "-m",
-        "xdoctest",
-        "--verbose",
-        "2",
-        "--report",
-        "cdiff",
-        "--nocolor",
-    ]
-    session.run("poetry", "install", "--no-dev", external=True)
-    constrained_install(session, "xdoctest")
-    for x in args:
-        session.run(*command, x)
 
 
 @nox.session(python="3.9")

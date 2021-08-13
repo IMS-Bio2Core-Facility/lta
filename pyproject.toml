@@ -79,6 +79,7 @@ show_missing = true
 addopts = """
 -vv
 --ignore=docs
+--xdoctest
 --cov=lta
 --cov-report=term
 --cov-report=xml
