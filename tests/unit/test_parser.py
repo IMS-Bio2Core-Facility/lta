@@ -11,7 +11,7 @@ def test_correct_usage(capsys: capture.CaptureFixture) -> None:
     lta_parser.print_usage()
     usage = capsys.readouterr()
     assert (
-        usage.out == "usage: lta [-h] [-V] [-t {[0, 1]}] folder output\n"
+        usage.out == "usage: lta [-h] [-V] [-t {[0, 1]}] [-b BOOT_REPS] folder output\n"
     ), "LTA's usage is incorrect."
 
 

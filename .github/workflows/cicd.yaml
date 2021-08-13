@@ -41,7 +41,7 @@ jobs:
         with:
           version: 1.1.7
       - name: Test Code and Docs
-        run: nox -s tests doc_tests
+        run: nox -s tests
       - name: Upload to codecov
         uses: codecov/codecov-action@v2
         with:

@@ -19,6 +19,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.7.1"
 pandas = "^1.3.1"
+numpy = "^1.21.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
@@ -78,6 +79,7 @@ show_missing = true
 addopts = """
 -vv
 --ignore=docs
+--xdoctest
 --cov=lta
 --cov-report=term
 --cov-report=xml
