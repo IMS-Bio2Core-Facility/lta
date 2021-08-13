@@ -66,4 +66,12 @@ lta_parser.add_argument(
     default=0.2,
 )
 
+lta_parser.add_argument(
+    "-b",
+    "--boot-reps",
+    type=int,
+    nargs=1,
+    default=20000,
+)
+
 lta_parser.set_defaults(func=run)
