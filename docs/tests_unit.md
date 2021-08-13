@@ -25,6 +25,13 @@ Tests for the `pipeline` dataclass
    :members:
    :private-members:
 
+Tests for the `jaccard` module
+------------------------------
+
+.. automodule:: tests.unit.test_helpers_jaccard
+   :members:
+   :private-members:
+
 Tests for the `FloatRange` Custom Type
 --------------------------------------
 

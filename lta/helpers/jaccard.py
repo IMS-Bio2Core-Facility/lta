@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """Jaccard similarities and their p-values.
 
-The code here represents a python implementation of the Jaccard package hosted here_
-by N. Chung. Its citation follows.
-
-.. _here: https://github.com/ncchung/jaccard
+The code here represents a python implementation of the Jaccard package hosted
+`here <https://github.com/ncchung/jaccard>`_ by N. Chung. Its citation follows.
 
 Citation
 ========
