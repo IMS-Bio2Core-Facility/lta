@@ -222,7 +222,49 @@ class Pipeline:
                 self.output / f"a_lipids_{mode}_counts.csv"
             )
 
-    def _jaccard(self, data: Dict[str, pd.DataFrame]) -> None:
+    def _get_u_lipids(self, tissue: str = "Tissue") -> None:
+        """Extract U-lipids from the dataset.
+
+        Any tissue where more than self.thresh of the samples are 0
+        is considered a total 0 for that lipid.
+        Lipids that are non-0 for all tissues in any Phenotype
+        are considered U-lipids.
+
+        Parameters
+        ----------
+        tissue : str, default="Tissue"  # noqa: DAR103
+            Where the tissue labels are located in the metadata
+        """
+        self.u_lipids = {}
+        for mode, frames in self.data.items():
+            # This can be done with pipes, but its functional unreadable that way
+            unified = pd.concat(frames, join="outer", axis="columns").fillna(False)
+            u_mask = (
+                unified.groupby(axis="columns", level=tissue).any().sum(axis="columns")
+                == 1
+            )
+            unified = unified.loc[u_mask, :]
+            data = [
+                unified.xs(group, axis="columns", level=tissue, drop_level=False)
+                for group in unified.columns.get_level_values(tissue).unique()
+            ]
+            data = [
+                df.loc[df.any(axis="columns"), :].droplevel(
+                    axis="columns", level=["Generation", "Handling", "Mode"]
+                )
+                for df in data
+            ]
+            for df in data:
+                group = df.columns.get_level_values(tissue).unique()[0].upper()
+                df.droplevel(["Category", "m/z"]).to_csv(
+                    self.output / f"u_lipids_{group}_{mode}.csv"
+                )
+                df.groupby(axis="rows", level="Category").sum().to_csv(
+                    self.output / f"u_lipids_{group}_{mode}_counts.csv"
+                )
+                self.u_lipids[f"{group}_{mode}"] = df
+
+    def _jaccard(self, data: Dict[str, pd.DataFrame], lipid_group: str) -> None:
         """Calculate jaccard distances and p-values.
 
         This takes a dictionary of data. As the output of each group of lipids will be
@@ -232,17 +274,24 @@ class Pipeline:
         ----------
         data : Dict[str, pd.DataFrame]
             A dictionary of modes and lipid data
+        lipid_group : str
+            The class of lipids analysed
         """
         for mode, lipids in data.items():
-            sim = lipids.groupby(axis="rows", level="Category").apply(
-                lambda df: jac.bootstrap(df.iloc[:, 0], df.iloc[:, 1], n=self.n)
-            )
-            dist = pd.DataFrame(
-                sim.to_list(), index=sim.index, columns=["J_dist", "p-val"]
-            )
-            # Convert from similarity to distance
-            dist["J_dist"] = 1 - dist["J_dist"]
-            dist.to_csv(self.output / f"a_lipids_{mode}_jaccard.csv")
+            if len(lipids) == 0:
+                # Overwrite if data is empty
+                (self.output / f"{lipid_group}_{mode}_jaccard.csv").write_text("")
+            else:
+                # Write if data exists
+                sim = lipids.groupby(axis="rows", level="Category").apply(
+                    lambda df: jac.bootstrap(df.iloc[:, 0], df.iloc[:, 1], n=self.n)
+                )
+                dist = pd.DataFrame(
+                    sim.to_list(), index=sim.index, columns=["J_dist", "p-val"]
+                )
+                # Convert from similarity to distance
+                dist["J_dist"] = 1 - dist["J_dist"]
+                dist.to_csv(self.output / f"{lipid_group}_{mode}_jaccard.csv")
 
     def run(self) -> None:
         """Run the full LTA pipeline.
@@ -251,4 +300,6 @@ class Pipeline:
         as well as the distance between the respective vectors.
         """
         self._get_a_lipids()
-        self._jaccard(self.a_lipids)
+        self._jaccard(self.a_lipids, "a_lipids")
+        self._get_u_lipids()
+        self._jaccard(self.u_lipids, "u_lipids")
