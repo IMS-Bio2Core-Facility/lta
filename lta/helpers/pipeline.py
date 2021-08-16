@@ -54,7 +54,8 @@ class Pipeline:
         """
         try:
             self.data: List[pd.DataFrame] = [
-                self._construct_df(file) for file in self.folder.iterdir()
+                self._post_process(self._construct_df(file))
+                for file in self.folder.iterdir()
             ]
         except FileNotFoundError:
             print(f"{self.folder} does not exist.")
@@ -78,16 +79,10 @@ class Pipeline:
 
         This assumes several things about the structure of the data.
         First, that the first 11 rows contain the metadata.
-        Second, that the names of the metadata are in column 2 because
-        Third, the first 3 columns are the row metadata.
+        Second, that the metadata Sample, Phenotype, Generation, Tissue,
+        Handling, and Mode are in rows 4 through 9, respectively
+        Third, any empty row or column is not informative.
         Finally, the data should be a csv.
-
-        Additionally, there is some agressive dropping of NaNs.
-        I have pandas inconsistently read empty columns as full of NaNs
-        rather than not reading them.
-        It seems to be an artifact from the software the file was created with.
-        To avoid this,
-        these types of columns and rows are dropped.
 
         Parameters
         ----------
@@ -99,19 +94,52 @@ class Pipeline:
         pd.DataFrame
             The created dataframe
         """
-        metadata: pd.DataFrame = pd.read_csv(file, nrows=11, index_col=2, header=None)
-        metadata = (
-            metadata.dropna(axis="columns", how="all")
-            .dropna(axis="rows", how="all")
-            .transpose()
+        counts: pd.DataFrame = pd.read_csv(
+            file, index_col=[0, 1, 2], header=list(range(3, 9)), skiprows=[9, 10]
         )
-
-        counts: pd.DataFrame = pd.read_csv(file, skiprows=11, index_col=[0, 1, 2])
-        counts = counts.loc[:, ~counts.columns.str.startswith("Unnamed")].dropna(
-            axis="rows", how="all"
-        )
-        counts.columns = pd.MultiIndex.from_frame(metadata)
+        counts = counts.dropna(axis="rows", how="all").dropna(axis="columns", how="all")
+        counts.columns.names = [
+            "Sample",
+            "Phenotype",
+            "Generation",
+            "Tissue",
+            "Handling",
+            "Mode",
+        ]
         return counts
+
+    def _post_process(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Process data frame to boolean counts.
+
+        All processing downstream is dependent on boolean data,
+        so, to prevent duplicate calculations, the data is converted
+        to this boolean form immediately after reading in.
+
+        This method makes all the same assumptions that ``_construct_df``
+        makes, and also assumes that the phenotype comparison occurs along
+        the column metadata "Phenotype".
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            The lipid data to convert to boolean.
+
+        Returns
+        -------
+        pd.DataFrame
+            The processed data.
+        """
+        metadata = df.columns.droplevel("Sample").unique()
+        df = (
+            (df == 0)
+            .groupby(axis="columns", level="Phenotype")
+            .transform(lambda x: x.sum() <= (self.thresh * len(x)))
+            .groupby(axis="columns", level="Phenotype")
+            .all()
+            .pipe(lambda x: x.loc[x.any(axis="columns"), :])
+        )
+        df.columns = metadata
+        return df
 
     def _get_a_lipids(self) -> None:
         """Extract A-lipids from the dataset.
@@ -124,12 +152,7 @@ class Pipeline:
         self.a_lipids = {}
         for mode in self.modes:
             not_zeros = [
-                (df == 0)
-                .groupby(axis="columns", level="Phenotype")
-                .transform(lambda x: x.sum() <= (self.thresh * len(x)))
-                .groupby(axis="columns", level="Phenotype")
-                .all()
-                .pipe(lambda x: x.loc[x.any(axis="columns"), :])
+                df
                 for df in self.data
                 if df.columns.get_level_values("Mode").unique() == mode
             ]
