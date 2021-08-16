@@ -79,18 +79,10 @@ class Pipeline:
 
         This assumes several things about the structure of the data.
         First, that the first 11 rows contain the metadata.
-        Second, that the names of the metadata are in column 2 because
-        Third, the first 3 columns are the row metadata.
-        Fourth, that the metadata labels ["Total signal", "0s", "Data ID", "Sample ID", "96wPL No.", "Address"]
-        are present, but not needed.
+        Second, that the metadata Sample, Phenotype, Generation, Tissue,
+        Handling, and Mode are in rows 4 through 9, respectively
+        Third, any empty row or column is not informative.
         Finally, the data should be a csv.
-
-        Additionally, there is some agressive dropping of NaNs.
-        I have pandas inconsistently read empty columns as full of NaNs
-        rather than not reading them.
-        It seems to be an artifact from the software the file was created with.
-        To avoid this,
-        these types of columns and rows are dropped.
 
         Parameters
         ----------
@@ -102,20 +94,18 @@ class Pipeline:
         pd.DataFrame
             The created dataframe
         """
-        metadata: pd.DataFrame = pd.read_csv(file, nrows=11, index_col=2, header=None)
-        metadata = (
-            metadata.dropna(axis="columns", how="all")
-            .dropna(axis="rows", how="all")
-            .transpose()
+        counts: pd.DataFrame = pd.read_csv(
+            file, index_col=[0, 1, 2], header=list(range(3, 9)), skiprows=[9, 10]
         )
-
-        counts: pd.DataFrame = pd.read_csv(file, skiprows=11, index_col=[0, 1, 2])
-        counts = counts.loc[:, ~counts.columns.str.startswith("Unnamed")].dropna(
-            axis="rows", how="all"
-        )
-        counts.columns = pd.MultiIndex.from_frame(metadata).droplevel(
-            ["Total signal", "0s", "Data ID", "Sample ID", "96wPL No.", "Address"]
-        )
+        counts = counts.dropna(axis="rows", how="all").dropna(axis="columns", how="all")
+        counts.columns.names = [
+            "Sample",
+            "Phenotype",
+            "Generation",
+            "Tissue",
+            "Handling",
+            "Mode",
+        ]
         return counts
 
     def _post_process(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -139,7 +129,7 @@ class Pipeline:
         pd.DataFrame
             The processed data.
         """
-        metadata = df.columns.unique()
+        metadata = df.columns.droplevel("Sample").unique()
         df = (
             (df == 0)
             .groupby(axis="columns", level="Phenotype")
