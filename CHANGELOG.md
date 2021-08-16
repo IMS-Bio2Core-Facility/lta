@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.0 (2021-08-16)
+### Feature
+* **pipeline:** Calculate jaccard for U-lipids ([`d43f0a4`](https://github.com/IMS-Bio2Core-Facility/lta/commit/d43f0a4a9d2f6e0e65445d8487f3ee65105664be))
+* **pipeline:** Identify U-lipids ([`03ef483`](https://github.com/IMS-Bio2Core-Facility/lta/commit/03ef4838497f59f97a290b6827814604f6d34719))
+
+### Documentation
+* **help-messages:** Expand help messages ([`4dbd97f`](https://github.com/IMS-Bio2Core-Facility/lta/commit/4dbd97f50f32497017a40b0bb22c13c352c11822))
+
 ## v0.4.0 (2021-08-13)
 ### Feature
 * **pipeline:** Add jaccard calculations ([`f17f1e2`](https://github.com/IMS-Bio2Core-Facility/lta/commit/f17f1e2cd1b27f08088651733c517dd346602988))
