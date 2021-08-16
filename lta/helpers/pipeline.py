@@ -53,7 +53,7 @@ class Pipeline:
             If there is no data in self.folder.
         """
         try:
-            self.data: List[pd.DataFrame] = [
+            frames: List[pd.DataFrame] = [
                 self._post_process(self._construct_df(file))
                 for file in self.folder.iterdir()
             ]
@@ -64,15 +64,10 @@ class Pipeline:
             print(f"{self.folder} is not directory.")
             raise
         else:
-            if len(self.data) == 0:
+            if len(frames) == 0:
                 raise RuntimeError(f"{self.folder} contains no data.")
+        self.data = self._split_data(self._get_modes(frames), frames)
         self.output.mkdir(exist_ok=True, parents=True)
-        # Long-standing mypy type bug
-        # See https://github.com/python/mypy/issues/2013
-        self.modes: Set[str] = set()
-        self.modes = self.modes.union(
-            *[df.columns.get_level_values("Mode").unique().tolist() for df in self.data]
-        )
 
     def _construct_df(self, file: Path) -> pd.DataFrame:
         """Construct a dataframe from the given path.
@@ -95,7 +90,7 @@ class Pipeline:
             The created dataframe
         """
         counts: pd.DataFrame = pd.read_csv(
-            file, index_col=[0, 1, 2], header=list(range(3, 9)), skiprows=[9, 10]
+            file, index_col=[0, 1, 2], header=list(range(3, 9)), skiprows=[9, 10, 11]
         )
         counts = counts.dropna(axis="rows", how="all").dropna(axis="columns", how="all")
         counts.columns.names = [
@@ -106,7 +101,61 @@ class Pipeline:
             "Handling",
             "Mode",
         ]
+        counts.index.names = ["Lipid", "Category", "m/z"]
         return counts
+
+    def _get_modes(self, frames: List[pd.DataFrame], level: str = "Mode") -> Set[str]:
+        """Get the experimental modes.
+
+        Given a list of dataframes, retrieve all uniques experimental modes.
+
+        Parameters
+        ----------
+        frames : List[pd.DataFrame]
+            The data to search
+        level : str, default="Mode"  # noqa: DAR103
+            The level containing the experimental modes.
+
+        Returns
+        -------
+        Set[str]
+            The unique experimental values
+        """
+        modes: Set[str] = set()
+        modes = modes.union(
+            *[df.columns.get_level_values(level).unique().tolist() for df in frames]
+        )
+        return modes
+
+    def _split_data(
+        self, modes: Set[str], frames: List[pd.DataFrame]
+    ) -> Dict[str, List[pd.DataFrame]]:
+        """Split data on mode.
+
+        Creates a dictionary where each key is a unique experimental mode,
+        and the values are lists of dataframes created with that experimental mode.
+
+        Parameters
+        ----------
+        modes : Set[str]
+            The experimental modes.
+        frames : List[pd.DataFrame]
+            The data to be sorted.
+
+        Returns
+        -------
+        Dict[str, List[pd.DataFrame]]
+            The sorted data.
+        """
+        data = {
+            mode: [
+                df
+                for df in frames
+                if df.columns.get_level_values("Mode").unique() == mode
+            ]
+            for mode in modes
+        }
+        return data
 
     def _post_process(self, df: pd.DataFrame) -> pd.DataFrame:
         """Process data frame to boolean counts.
@@ -118,6 +167,10 @@ class Pipeline:
         This method makes all the same assumptions that ``_construct_df``
         makes, and also assumes that the phenotype comparison occurs along
         the column metadata "Phenotype".
+
+        Frustratingly, index levels are lost when grouping on a multiindex.
+        To ensure it is correctly added back, the metadata are saved,
+        then joined back onto the resultant boolean data frame.
 
         Parameters
         ----------
@@ -138,37 +191,36 @@ class Pipeline:
             .all()
             .pipe(lambda x: x.loc[x.any(axis="columns"), :])
         )
-        df.columns = metadata
-        return df
+        df = df.transpose().join(pd.DataFrame(columns=metadata).transpose(), how="left")
+        return df.transpose()
 
-    def _get_a_lipids(self) -> None:
+    def _get_a_lipids(self, level: str = "Phenotype") -> None:
         """Extract A-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
         is considered a total 0 for that lipid.
         Lipids that are non-0 for all tissues in any Phenotype
         are considered A-lipids.
+
+        Parameters
+        ----------
+        level : str, default="Phenotype"  # noqa: DAR103
+            Where the experimental conditions are located in the metadata
         """
-        self.a_lipids = {}
-        for mode in self.modes:
-            not_zeros = [
-                df
-                for df in self.data
-                if df.columns.get_level_values("Mode").unique() == mode
-            ]
-            unified = (
-                pd.concat(not_zeros, join="inner", axis="columns")
-                .groupby(axis="columns", level="Phenotype")
-                .all()
-                .pipe(lambda x: x.loc[x.any(axis="columns"), :])
-            )
-            unified.droplevel(["Category", "m/z"]).to_csv(
+        self.a_lipids = {
+            mode: pd.concat(frames, join="inner", axis="columns")
+            .groupby(axis="columns", level=level)
+            .all()
+            .pipe(lambda x: x.loc[x.any(axis="columns"), :])
+            for mode, frames in self.data.items()
+        }
+        for mode, data in self.a_lipids.items():
+            data.droplevel(["Category", "m/z"]).to_csv(
                 self.output / f"a_lipids_{mode}.csv"
             )
-            unified.groupby(axis="rows", level="Category").sum().to_csv(
+            data.groupby(axis="rows", level="Category").sum().to_csv(
                 self.output / f"a_lipids_{mode}_counts.csv"
             )
-            self.a_lipids[mode] = unified
 
     def _jaccard(self, data: Dict[str, pd.DataFrame]) -> None:
         """Calculate jaccard distances and p-values.
