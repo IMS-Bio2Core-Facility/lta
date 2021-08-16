@@ -262,9 +262,9 @@ class Pipeline:
                 df.groupby(axis="rows", level="Category").sum().to_csv(
                     self.output / f"u_lipids_{group}_{mode}_counts.csv"
                 )
-            self.u_lipids[mode] = data
+                self.u_lipids[f"{group}_{mode}"] = df
 
-    def _jaccard(self, data: Dict[str, pd.DataFrame]) -> None:
+    def _jaccard(self, data: Dict[str, pd.DataFrame], lipid_group: str) -> None:
         """Calculate jaccard distances and p-values.
 
         This takes a dictionary of data. As the output of each group of lipids will be
@@ -274,17 +274,24 @@ class Pipeline:
         ----------
         data : Dict[str, pd.DataFrame]
             A dictionary of modes and lipid data
+        lipid_group : str
+            The class of lipids analysed
         """
         for mode, lipids in data.items():
-            sim = lipids.groupby(axis="rows", level="Category").apply(
-                lambda df: jac.bootstrap(df.iloc[:, 0], df.iloc[:, 1], n=self.n)
-            )
-            dist = pd.DataFrame(
-                sim.to_list(), index=sim.index, columns=["J_dist", "p-val"]
-            )
-            # Convert from similarity to distance
-            dist["J_dist"] = 1 - dist["J_dist"]
-            dist.to_csv(self.output / f"a_lipids_{mode}_jaccard.csv")
+            if len(lipids) == 0:
+                # Overwrite if data is empty
+                (self.output / f"{lipid_group}_{mode}_jaccard.csv").write_text("")
+            else:
+                # Write if data exists
+                sim = lipids.groupby(axis="rows", level="Category").apply(
+                    lambda df: jac.bootstrap(df.iloc[:, 0], df.iloc[:, 1], n=self.n)
+                )
+                dist = pd.DataFrame(
+                    sim.to_list(), index=sim.index, columns=["J_dist", "p-val"]
+                )
+                # Convert from similarity to distance
+                dist["J_dist"] = 1 - dist["J_dist"]
+                dist.to_csv(self.output / f"{lipid_group}_{mode}_jaccard.csv")
 
     def run(self) -> None:
         """Run the full LTA pipeline.
@@ -293,5 +300,6 @@ class Pipeline:
         as well as the distance between the respective vectors.
         """
         self._get_a_lipids()
+        self._jaccard(self.a_lipids, "a_lipids")
         self._get_u_lipids()
-        self._jaccard(self.a_lipids)
+        self._jaccard(self.u_lipids, "u_lipids")
