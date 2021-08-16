@@ -54,7 +54,8 @@ class Pipeline:
         """
         try:
             self.data: List[pd.DataFrame] = [
-                self._construct_df(file) for file in self.folder.iterdir()
+                self._post_process(self._construct_df(file))
+                for file in self.folder.iterdir()
             ]
         except FileNotFoundError:
             print(f"{self.folder} does not exist.")
@@ -80,6 +81,8 @@ class Pipeline:
         First, that the first 11 rows contain the metadata.
         Second, that the names of the metadata are in column 2 because
         Third, the first 3 columns are the row metadata.
+        Fourth, that the metadata labels ["Total signal", "0s", "Data ID", "Sample ID", "96wPL No.", "Address"]
+        are present, but not needed.
         Finally, the data should be a csv.
 
         Additionally, there is some agressive dropping of NaNs.
@@ -110,8 +113,43 @@ class Pipeline:
         counts = counts.loc[:, ~counts.columns.str.startswith("Unnamed")].dropna(
             axis="rows", how="all"
         )
-        counts.columns = pd.MultiIndex.from_frame(metadata)
+        counts.columns = pd.MultiIndex.from_frame(metadata).droplevel(
+            ["Total signal", "0s", "Data ID", "Sample ID", "96wPL No.", "Address"]
+        )
         return counts
+
+    def _post_process(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Process data frame to boolean counts.
+
+        All processing downstream is dependent on boolean data,
+        so, to prevent duplicate calculations, the data is converted
+        to this boolean form immediately after reading in.
+
+        This method makes all the same assumptions that ``_construct_df``
+        makes, and also assumes that the phenotype comparison occurs along
+        the column metadata "Phenotype".
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            The lipid data to convert to boolean.
+
+        Returns
+        -------
+        pd.DataFrame
+            The processed data.
+        """
+        metadata = df.columns.unique()
+        df = (
+            (df == 0)
+            .groupby(axis="columns", level="Phenotype")
+            .transform(lambda x: x.sum() <= (self.thresh * len(x)))
+            .groupby(axis="columns", level="Phenotype")
+            .all()
+            .pipe(lambda x: x.loc[x.any(axis="columns"), :])
+        )
+        df.columns = metadata
+        return df
 
     def _get_a_lipids(self) -> None:
         """Extract A-lipids from the dataset.
@@ -124,12 +162,7 @@ class Pipeline:
         self.a_lipids = {}
         for mode in self.modes:
             not_zeros = [
-                (df == 0)
-                .groupby(axis="columns", level="Phenotype")
-                .transform(lambda x: x.sum() <= (self.thresh * len(x)))
-                .groupby(axis="columns", level="Phenotype")
-                .all()
-                .pipe(lambda x: x.loc[x.any(axis="columns"), :])
+                df
                 for df in self.data
                 if df.columns.get_level_values("Mode").unique() == mode
             ]
