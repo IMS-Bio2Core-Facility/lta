@@ -69,6 +69,7 @@ lta_parser.add_argument(
     choices=FloatRange(0, 1),  # type: ignore
     nargs=1,
     default=0.2,
+    help="The '0' threshold",
 )
 
 lta_parser.add_argument(
@@ -77,6 +78,7 @@ lta_parser.add_argument(
     type=int,
     nargs=1,
     default=20000,
+    help="Number of bootstrap repetitions",
 )
 
 lta_parser.set_defaults(func=run)
