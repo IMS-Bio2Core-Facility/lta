@@ -134,7 +134,7 @@ class Pipeline:
         return modes
 
     def _split_data(
-        self, modes: Set[str], frames: List[pd.DataFrame]
+        self, modes: Set[str], frames: List[pd.DataFrame], level: Optional[str] = None
     ) -> Dict[str, List[pd.DataFrame]]:
         """Split data on mode.
 
@@ -147,17 +147,22 @@ class Pipeline:
             The experimental modes.
         frames : List[pd.DataFrame]
             The data to be sorted.
+        level : Optional[str]
+            If None, default='Mode'
+            The metadata level containing experimental modes
 
         Returns
         -------
         Dict[str, List[pd.DataFrame]]
             The sorted data.
         """
+        if not level:
+            level = "Mode"
         data = {
             mode: [
                 df
                 for df in frames
-                if df.columns.get_level_values("Mode").unique() == mode
+                if df.columns.get_level_values(level).unique() == mode
             ]
             for mode in modes
         }
