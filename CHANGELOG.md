@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.0 (2021-08-17)
+### Feature
+* **pipeline:** Calculate b_lipids ([`c11e563`](https://github.com/IMS-Bio2Core-Facility/lta/commit/c11e563fb41d0caefa6b0a8fe0dcfbe7167ece0c))
+
+### Documentation
+* **README:** Expand usage instructions ([`173be97`](https://github.com/IMS-Bio2Core-Facility/lta/commit/173be9708feb9e41a89b2d77bd0c40357ccfa4f1))
+
 ## v0.5.0 (2021-08-16)
 ### Feature
 * **pipeline:** Calculate jaccard for U-lipids ([`d43f0a4`](https://github.com/IMS-Bio2Core-Facility/lta/commit/d43f0a4a9d2f6e0e65445d8487f3ee65105664be))
