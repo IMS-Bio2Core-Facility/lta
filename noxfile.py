@@ -19,7 +19,7 @@ VERSIONS: List[str] = [
 ]
 
 nox.options.stop_on_first_error = False
-nox.options.reuse_existing_virtualenvs = True
+nox.options.reuse_existing_virtualenvs = False
 
 
 def constrained_install(session: Session, *args: str, **kwargs: Any) -> None:
