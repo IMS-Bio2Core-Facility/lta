@@ -63,19 +63,21 @@ def similarity(
 
     if not px:
         px = x.mean()
+        assert isinstance(px, float)
     if not py:
         py = y.mean()
+        assert isinstance(py, float)
 
     intersect = (x & y).sum()
     union = x.sum() + y.sum() - intersect
 
     if union == 0:
-        j = (px * py) / (px + py - (px * py))  # type: ignore
+        j = (px * py) / (px + py - (px * py))
     else:
         j = intersect / union
 
     if center:
-        return j - ((px * py) / (px + py - (px * py)))  # type: ignore
+        return j - ((px * py) / (px + py - (px * py)))
     else:
         return j
 
