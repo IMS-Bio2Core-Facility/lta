@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """A dataclass that allows for an object oriented pipeline."""
+import itertools
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set
 
 import pandas as pd
 
@@ -104,7 +105,9 @@ class Pipeline:
         counts.index.names = ["Lipid", "Category", "m/z"]
         return counts
 
-    def _get_modes(self, frames: List[pd.DataFrame], level: str = "Mode") -> Set[str]:
+    def _get_modes(
+        self, frames: List[pd.DataFrame], level: Optional[str] = None
+    ) -> Set[str]:
         """Get the experimental modes.
 
         Given a list of dataframes, retrieve all uniques experimental modes.
@@ -113,7 +116,8 @@ class Pipeline:
         ----------
         frames : List[pd.DataFrame]
             The data to search
-        level : str, default="Mode"  # noqa: DAR103
+        level : Optional[str]
+            If None, then default='Mode'
             The level containing the experimental modes.
 
         Returns
@@ -121,6 +125,8 @@ class Pipeline:
         Set[str]
             The unique experimental values
         """
+        if not level:
+            level = "Mode"
         modes: Set[str] = set()
         modes = modes.union(
             *[df.columns.get_level_values(level).unique().tolist() for df in frames]
@@ -194,7 +200,7 @@ class Pipeline:
         df = df.transpose().join(pd.DataFrame(columns=metadata).transpose(), how="left")
         return df.transpose()
 
-    def _get_a_lipids(self, level: str = "Phenotype") -> None:
+    def _get_a_lipids(self, level: Optional[str] = None) -> None:
         """Extract A-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
@@ -204,9 +210,12 @@ class Pipeline:
 
         Parameters
         ----------
-        level : str, default="Phenotype"  # noqa: DAR103
+        level : Optional[str]
+            If None, default='Phenotype'
             Where the experimental conditions are located in the metadata
         """
+        if not level:
+            level = "Phenotype"
         self.a_lipids = {
             mode: pd.concat(frames, join="inner", axis="columns")
             .groupby(axis="columns", level=level)
@@ -222,7 +231,49 @@ class Pipeline:
                 self.output / f"a_lipids_{mode}_counts.csv"
             )
 
-    def _get_u_lipids(self, tissue: str = "Tissue") -> None:
+    def _get_b_lipids(
+        self, tissue: Optional[str] = None, level: Optional[str] = None
+    ) -> None:
+        """Extract B-lipids from the dataset.
+
+        Any tissue where more than self.thresh of the samples are 0
+        is considered a total 0 for that lipid.
+        Lipids that are non-0 for any pair of tissues within any Phenotype
+        are considered B-lipids.
+
+        Parameters
+        ----------
+        tissue : Optional[str]
+            If None, default='Tissue'
+            Where the tissue labels are located in the metadata
+        level : Optional[str]
+            If None, default='Phenotype'
+            Where the experimental conditions are located in the metadata
+        """
+        self.b_lipids = {}
+        if not tissue:
+            tissue = "Tissue"
+        if not level:
+            level = "Phenotype"
+        for mode, frames in self.data.items():
+            pairs = itertools.combinations(frames, 2)
+            for first, second in pairs:
+                unified = first.join(second, how="inner")
+                groups = unified.columns.get_level_values(tissue).unique()
+                unified = (
+                    unified.groupby(axis="columns", level=level)
+                    .all()
+                    .pipe(lambda x: x.loc[x.any(axis="columns"), :])
+                )
+                unified.droplevel(["Category", "m/z"]).to_csv(
+                    self.output / f"b_lipids_{groups[0]}_{groups[1]}_{mode}.csv"
+                )
+                unified.groupby(axis="rows", level="Category").sum().to_csv(
+                    self.output / f"b_lipids_{groups[0]}_{groups[1]}_{mode}_counts.csv"
+                )
+                self.b_lipids[f"{groups[0]}_{groups[1]}_{mode}"] = unified
+
+    def _get_u_lipids(self, level: Optional[str] = None) -> None:
         """Extract U-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
@@ -232,21 +283,24 @@ class Pipeline:
 
         Parameters
         ----------
-        tissue : str, default="Tissue"  # noqa: DAR103
+        level : Optional[str]
+            If None, default='Tissue'
             Where the tissue labels are located in the metadata
         """
+        if not level:
+            level = "Tissue"
         self.u_lipids = {}
         for mode, frames in self.data.items():
             # This can be done with pipes, but its functional unreadable that way
             unified = pd.concat(frames, join="outer", axis="columns").fillna(False)
             u_mask = (
-                unified.groupby(axis="columns", level=tissue).any().sum(axis="columns")
+                unified.groupby(axis="columns", level=level).any().sum(axis="columns")
                 == 1
             )
             unified = unified.loc[u_mask, :]
             data = [
-                unified.xs(group, axis="columns", level=tissue, drop_level=False)
-                for group in unified.columns.get_level_values(tissue).unique()
+                unified.xs(group, axis="columns", level=level, drop_level=False)
+                for group in unified.columns.get_level_values(level).unique()
             ]
             data = [
                 df.loc[df.any(axis="columns"), :].droplevel(
@@ -255,7 +309,7 @@ class Pipeline:
                 for df in data
             ]
             for df in data:
-                group = df.columns.get_level_values(tissue).unique()[0].upper()
+                group = df.columns.get_level_values(level).unique()[0].upper()
                 df.droplevel(["Category", "m/z"]).to_csv(
                     self.output / f"u_lipids_{group}_{mode}.csv"
                 )
@@ -278,6 +332,7 @@ class Pipeline:
             The class of lipids analysed
         """
         for mode, lipids in data.items():
+            print(mode)
             if len(lipids) == 0:
                 # Overwrite if data is empty
                 (self.output / f"{lipid_group}_{mode}_jaccard.csv").write_text("")
@@ -303,3 +358,5 @@ class Pipeline:
         self._jaccard(self.a_lipids, "a_lipids")
         self._get_u_lipids()
         self._jaccard(self.u_lipids, "u_lipids")
+        self._get_b_lipids()
+        self._jaccard(self.b_lipids, "b_lipids")
