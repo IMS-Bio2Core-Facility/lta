@@ -9,6 +9,33 @@ import pytest
 
 
 @pytest.fixture
+def binary_df() -> pd.DataFrame:
+    """Create a binary dataframe.
+
+    This creates a binary dataframe with a known distribution
+    1s and 0s. This allows for prior knowledge about thresholding
+    to confirm testing.
+
+    Returns
+    -------
+    pd.DataFrame
+        A binary dataframe of known properties
+    """
+    indices = pd.MultiIndex.from_arrays(
+        [list("abc"), list("abc"), list("abc")], names=list("xyz")
+    )
+    columns = pd.MultiIndex.from_arrays(
+        [list("abc") * 3, list("abc") * 3, list("abc") * 3], names=list("xyz")
+    )
+    data = [
+        [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ]
+    return pd.DataFrame(data, columns=columns, index=indices)
+
+
+@pytest.fixture
 def create_df() -> Callable[
     [Tuple[int, int], int, List[str], int, List[str]], pd.DataFrame
 ]:
