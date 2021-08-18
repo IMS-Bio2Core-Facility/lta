@@ -85,7 +85,7 @@ def get_unique_level(
         )
     if axis == "columns":
         values = values.union(
-            *[df.index.get_level_values(level).unique().tolist() for df in frames]
+            *[df.columns.get_level_values(level).unique().tolist() for df in frames]
         )
     return values
 
