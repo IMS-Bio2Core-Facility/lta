@@ -119,7 +119,9 @@ class Pipeline:
                 self.output / f"a_lipids_{mode}_counts.csv"
             )
 
-    def _get_b_lipids(self, tissue: str = None, level: str = None) -> None:
+    def _get_b_lipids(
+        self, tissue: str, level: str, picky: bool = True
+    ) -> Dict[str, pd.DataFrame]:
         """Extract B-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
@@ -133,9 +135,44 @@ class Pipeline:
             The column metadata containing sample tissue
         level : str
             The column metadata containing experimental groups
+        picky : bool
+            default=True
+            If true, do **not** consider lipids that are also A-lipids
+
+        Returns
+        -------
+        Dict[str, pd.DataFrame]
+            Keys are groupings with the B-lipids for that set
+
+        Raises
+        ------
+        AttributeError
+            If A-lipids have not been previously calculated
         """
-        self.b_lipids = {}
-        for mode, frames in self.data.items():
+        # drop or keep a-lipids, depending on picky
+        try:
+            a_lip = {mode: df.index for mode, df in self.a_lipids.items()}
+        except AttributeError:
+            print("You must find A-lipids before B-lipids.")
+            raise
+        else:
+            # This assumes that self.data and a_lip will have the same keys
+            # Which is definitely True
+            if picky:
+                data = {
+                    mode: [df.drop(index=idx) for df in self.data[mode]]
+                    for mode, idx in a_lip.items()
+                }
+                subtype = "p"
+            else:
+                data = {
+                    mode: [df.loc[idx, :] for df in self.data[mode]]
+                    for mode, idx in a_lip.items()
+                }
+                subtype = "c"
+
+        results = {}
+        for mode, frames in data.items():
             pairs = itertools.combinations(frames, 2)
             for first, second in pairs:
                 unified = first.join(second, how="inner")
@@ -146,12 +183,15 @@ class Pipeline:
                     .pipe(lambda x: x.loc[x.any(axis="columns"), :])
                 )
                 unified.droplevel(["Category", "m/z"]).to_csv(
-                    self.output / f"b_lipids_{groups[0]}_{groups[1]}_{mode}.csv"
+                    self.output
+                    / f"b{subtype}_lipids_{groups[0]}_{groups[1]}_{mode}.csv"
                 )
                 unified.groupby(axis="rows", level="Category").sum().to_csv(
-                    self.output / f"b_lipids_{groups[0]}_{groups[1]}_{mode}_counts.csv"
+                    self.output
+                    / f"b{subtype}_lipids_{groups[0]}_{groups[1]}_{mode}_counts.csv"
                 )
-                self.b_lipids[f"{groups[0]}_{groups[1]}_{mode}"] = unified
+                results[f"{groups[0]}_{groups[1]}_{mode}"] = unified
+        return results
 
     def _get_u_lipids(self, tissue: str) -> None:
         """Extract U-lipids from the dataset.
@@ -241,5 +281,7 @@ class Pipeline:
         self._jaccard(self.a_lipids, "a_lipids")
         self._get_u_lipids(tissue)
         self._jaccard(self.u_lipids, "u_lipids")
-        self._get_b_lipids(tissue, level)
-        self._jaccard(self.b_lipids, "b_lipids")
+        self.bc_lipids = self._get_b_lipids(tissue, level, picky=False)
+        self.bp_lipids = self._get_b_lipids(tissue, level, picky=True)
+        self._jaccard(self.bc_lipids, "bc_lipids")
+        self._jaccard(self.bp_lipids, "bp_lipids")
