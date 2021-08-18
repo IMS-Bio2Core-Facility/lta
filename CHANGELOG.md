@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.1 (2021-08-18)
+### Fix
+* **unit_tests:** Use binary_df fixture ([`46875fa`](https://github.com/IMS-Bio2Core-Facility/lta/commit/46875fa9ced48594012a3b8ef3831786e3d2c68c))
+* **data_handling:** Correct column/index check ([`bf143f1`](https://github.com/IMS-Bio2Core-Facility/lta/commit/bf143f1bf6f978e59459a35d984e84735b5bd769))
+* **pipeline:** Generalise _split_data level ([`9fb0c7e`](https://github.com/IMS-Bio2Core-Facility/lta/commit/9fb0c7e12393cc00dff0f17896adb5ca7ca97f3f))
+
 ## v0.6.0 (2021-08-17)
 ### Feature
 * **pipeline:** Calculate b_lipids ([`c11e563`](https://github.com/IMS-Bio2Core-Facility/lta/commit/c11e563fb41d0caefa6b0a8fe0dcfbe7167ece0c))
