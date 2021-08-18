@@ -75,6 +75,10 @@ source = ["lta"]
 
 [tool.coverage.report]
 show_missing = true
+exclude_lines = [
+        "if sys.version_info >= (3, 8):",
+        "from typing_extensions import Literal"
+]
 
 [tool.pytest.ini_options]
 addopts = """
