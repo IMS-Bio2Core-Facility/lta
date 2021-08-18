@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.7.0 (2021-08-18)
+### Feature
+* **pipeline:** Split b-lipids ([`9254797`](https://github.com/IMS-Bio2Core-Facility/lta/commit/9254797220ee78147081c00129024e6da34d3f15))
+
 ## v0.6.1 (2021-08-18)
 ### Fix
 * **unit_tests:** Use binary_df fixture ([`46875fa`](https://github.com/IMS-Bio2Core-Facility/lta/commit/46875fa9ced48594012a3b8ef3831786e3d2c68c))
