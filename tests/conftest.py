@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """Fixtures for pytest."""
 from itertools import cycle, islice
-from typing import Callable, List, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import numpy as np
-import numpy.random as rand
 import pandas as pd
 import pytest
 
@@ -35,16 +34,20 @@ def create_df() -> Callable[
     """
 
     def _creator(
-        dims: Tuple[int, int],
-        index_levels: int,
-        index_names: List[str],
-        column_levels: int,
-        column_names: List[str],
+        dims: Tuple[int, int] = (5, 5),
+        index_levels: int = 3,
+        index_names: Optional[List[str]] = None,
+        column_levels: int = 3,
+        column_names: Optional[List[str]] = None,
     ) -> pd.DataFrame:
         """Generate dataframe."""
+        if not index_names:
+            index_names = list("xyz")
+        if not column_names:
+            column_names = list("xyz")
         repeat = lambda x: list(islice(cycle(["a", "b", "c"]), x))
 
-        data = rand.rand(*dims)
+        data = np.random.default_rng(42).integers(2, size=dims)
         index_data = np.array([repeat(dims[0]) for _ in range(index_levels)])
         column_data = np.array([repeat(dims[1]) for _ in range(column_levels)])
         return pd.DataFrame(
