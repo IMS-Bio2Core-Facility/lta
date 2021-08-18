@@ -3,10 +3,11 @@
 import itertools
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List
 
 import pandas as pd
 
+import lta.helpers.data_handling as dh
 import lta.helpers.jaccard as jac
 
 
@@ -55,7 +56,27 @@ class Pipeline:
         """
         try:
             frames: List[pd.DataFrame] = [
-                self._post_process(self._construct_df(file))
+                dh.not_zero(
+                    dh.construct_df(
+                        file,
+                        index_names=["Lipid", "Category", "m/z"],
+                        column_names=[
+                            "Sample",
+                            "Phenotype",
+                            "Generation",
+                            "Tissue",
+                            "Handling",
+                            "Mode",
+                        ],
+                        index_col=[0, 1, 2],
+                        header=list(range(3, 9)),
+                        skiprows=[9, 10, 11],
+                    ),
+                    axis="columns",
+                    level="Phenotype",
+                    thresh=self.thresh,
+                    drop=["Sample"],
+                )
                 for file in self.folder.iterdir()
             ]
         except FileNotFoundError:
@@ -67,140 +88,10 @@ class Pipeline:
         else:
             if len(frames) == 0:
                 raise RuntimeError(f"{self.folder} contains no data.")
-        self.data = self._split_data(self._get_modes(frames), frames)
+        self.data = dh.split_data(frames, axis="columns", level="Mode")
         self.output.mkdir(exist_ok=True, parents=True)
 
-    def _construct_df(self, file: Path) -> pd.DataFrame:
-        """Construct a dataframe from the given path.
-
-        This assumes several things about the structure of the data.
-        First, that the first 11 rows contain the metadata.
-        Second, that the metadata Sample, Phenotype, Generation, Tissue,
-        Handling, and Mode are in rows 4 through 9, respectively
-        Third, any empty row or column is not informative.
-        Finally, the data should be a csv.
-
-        Parameters
-        ----------
-        file : Path
-            The path to the data file.
-
-        Returns
-        -------
-        pd.DataFrame
-            The created dataframe
-        """
-        counts: pd.DataFrame = pd.read_csv(
-            file, index_col=[0, 1, 2], header=list(range(3, 9)), skiprows=[9, 10, 11]
-        )
-        counts = counts.dropna(axis="rows", how="all").dropna(axis="columns", how="all")
-        counts.columns.names = [
-            "Sample",
-            "Phenotype",
-            "Generation",
-            "Tissue",
-            "Handling",
-            "Mode",
-        ]
-        counts.index.names = ["Lipid", "Category", "m/z"]
-        return counts
-
-    def _get_modes(
-        self, frames: List[pd.DataFrame], level: Optional[str] = None
-    ) -> Set[str]:
-        """Get the experimental modes.
-
-        Given a list of dataframes, retrieve all uniques experimental modes.
-
-        Parameters
-        ----------
-        frames : List[pd.DataFrame]
-            The data to search
-        level : Optional[str]
-            If None, then default='Mode'
-            The level containing the experimental modes.
-
-        Returns
-        -------
-        Set[str]
-            The unique experimental values
-        """
-        if not level:
-            level = "Mode"
-        modes: Set[str] = set()
-        modes = modes.union(
-            *[df.columns.get_level_values(level).unique().tolist() for df in frames]
-        )
-        return modes
-
-    def _split_data(
-        self, modes: Set[str], frames: List[pd.DataFrame]
-    ) -> Dict[str, List[pd.DataFrame]]:
-        """Split data on mode.
-
-        Creates a dictionary where each key is a unique experimental mode,
-        and the values are lists of dataframes created with that experimental mode.
-
-        Parameters
-        ----------
-        modes : Set[str]
-            The experimental modes.
-        frames : List[pd.DataFrame]
-            The data to be sorted.
-
-        Returns
-        -------
-        Dict[str, List[pd.DataFrame]]
-            The sorted data.
-        """
-        data = {
-            mode: [
-                df
-                for df in frames
-                if df.columns.get_level_values("Mode").unique() == mode
-            ]
-            for mode in modes
-        }
-        return data
-
-    def _post_process(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Process data frame to boolean counts.
-
-        All processing downstream is dependent on boolean data,
-        so, to prevent duplicate calculations, the data is converted
-        to this boolean form immediately after reading in.
-
-        This method makes all the same assumptions that ``_construct_df``
-        makes, and also assumes that the phenotype comparison occurs along
-        the column metadata "Phenotype".
-
-        Frustratingly, index levels are lost when grouping on a multiindex.
-        To ensure it is correctly added back, the metadata are saved,
-        then joined back onto the resultant boolean data frame.
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            The lipid data to convert to boolean.
-
-        Returns
-        -------
-        pd.DataFrame
-            The processed data.
-        """
-        metadata = df.columns.droplevel("Sample").unique()
-        df = (
-            (df == 0)
-            .groupby(axis="columns", level="Phenotype")
-            .transform(lambda x: x.sum() <= (self.thresh * len(x)))
-            .groupby(axis="columns", level="Phenotype")
-            .all()
-            .pipe(lambda x: x.loc[x.any(axis="columns"), :])
-        )
-        df = df.transpose().join(pd.DataFrame(columns=metadata).transpose(), how="left")
-        return df.transpose()
-
-    def _get_a_lipids(self, level: Optional[str] = None) -> None:
+    def _get_a_lipids(self, level: str) -> None:
         """Extract A-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
@@ -210,12 +101,9 @@ class Pipeline:
 
         Parameters
         ----------
-        level : Optional[str]
-            If None, default='Phenotype'
-            Where the experimental conditions are located in the metadata
+        level : str
+            The column metadata level that contains the experimental groups
         """
-        if not level:
-            level = "Phenotype"
         self.a_lipids = {
             mode: pd.concat(frames, join="inner", axis="columns")
             .groupby(axis="columns", level=level)
@@ -231,9 +119,7 @@ class Pipeline:
                 self.output / f"a_lipids_{mode}_counts.csv"
             )
 
-    def _get_b_lipids(
-        self, tissue: Optional[str] = None, level: Optional[str] = None
-    ) -> None:
+    def _get_b_lipids(self, tissue: str = None, level: str = None) -> None:
         """Extract B-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
@@ -243,18 +129,12 @@ class Pipeline:
 
         Parameters
         ----------
-        tissue : Optional[str]
-            If None, default='Tissue'
-            Where the tissue labels are located in the metadata
-        level : Optional[str]
-            If None, default='Phenotype'
-            Where the experimental conditions are located in the metadata
+        tissue : str
+            The column metadata containing sample tissue
+        level : str
+            The column metadata containing experimental groups
         """
         self.b_lipids = {}
-        if not tissue:
-            tissue = "Tissue"
-        if not level:
-            level = "Phenotype"
         for mode, frames in self.data.items():
             pairs = itertools.combinations(frames, 2)
             for first, second in pairs:
@@ -273,7 +153,7 @@ class Pipeline:
                 )
                 self.b_lipids[f"{groups[0]}_{groups[1]}_{mode}"] = unified
 
-    def _get_u_lipids(self, level: Optional[str] = None) -> None:
+    def _get_u_lipids(self, tissue: str) -> None:
         """Extract U-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
@@ -283,24 +163,21 @@ class Pipeline:
 
         Parameters
         ----------
-        level : Optional[str]
-            If None, default='Tissue'
-            Where the tissue labels are located in the metadata
+        tissue : str
+            The column metadata containing sample tissue
         """
-        if not level:
-            level = "Tissue"
         self.u_lipids = {}
         for mode, frames in self.data.items():
             # This can be done with pipes, but its functional unreadable that way
             unified = pd.concat(frames, join="outer", axis="columns").fillna(False)
             u_mask = (
-                unified.groupby(axis="columns", level=level).any().sum(axis="columns")
+                unified.groupby(axis="columns", level=tissue).any().sum(axis="columns")
                 == 1
             )
             unified = unified.loc[u_mask, :]
             data = [
-                unified.xs(group, axis="columns", level=level, drop_level=False)
-                for group in unified.columns.get_level_values(level).unique()
+                unified.xs(group, axis="columns", level=tissue, drop_level=False)
+                for group in unified.columns.get_level_values(tissue).unique()
             ]
             data = [
                 df.loc[df.any(axis="columns"), :].droplevel(
@@ -309,7 +186,7 @@ class Pipeline:
                 for df in data
             ]
             for df in data:
-                group = df.columns.get_level_values(level).unique()[0].upper()
+                group = df.columns.get_level_values(tissue).unique()[0].upper()
                 df.droplevel(["Category", "m/z"]).to_csv(
                     self.output / f"u_lipids_{group}_{mode}.csv"
                 )
@@ -332,7 +209,6 @@ class Pipeline:
             The class of lipids analysed
         """
         for mode, lipids in data.items():
-            print(mode)
             if len(lipids) == 0:
                 # Overwrite if data is empty
                 (self.output / f"{lipid_group}_{mode}_jaccard.csv").write_text("")
@@ -348,15 +224,22 @@ class Pipeline:
                 dist["J_dist"] = 1 - dist["J_dist"]
                 dist.to_csv(self.output / f"{lipid_group}_{mode}_jaccard.csv")
 
-    def run(self) -> None:
+    def run(self, level: str, tissue: str) -> None:
         """Run the full LTA pipeline.
 
         This determines the various classes of lipids
         as well as the distance between the respective vectors.
+
+        Parameters
+        ----------
+        tissue : str
+            The column metadata containing sample tissue
+        level : str
+            The column metadata containing experimental groups
         """
-        self._get_a_lipids()
+        self._get_a_lipids(level)
         self._jaccard(self.a_lipids, "a_lipids")
-        self._get_u_lipids()
+        self._get_u_lipids(tissue)
         self._jaccard(self.u_lipids, "u_lipids")
-        self._get_b_lipids()
+        self._get_b_lipids(tissue, level)
         self._jaccard(self.b_lipids, "b_lipids")

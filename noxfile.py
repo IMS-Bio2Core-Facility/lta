@@ -70,7 +70,10 @@ def lint(session: Session) -> None:
 def type(session: Session) -> None:
     """Type check files with mypy."""
     args = session.posargs or LOCATIONS
-    constrained_install(session, "mypy", "types-requests")
+    constrained_install(
+        session,
+        "mypy",
+    )
     session.run("mypy", "--ignore-missing-imports", *args)
 
 

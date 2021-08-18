@@ -19,5 +19,9 @@ def run(args: argparse.Namespace) -> None:
     args: argparse.Namespace
         The passed args.
     """
+    if isinstance(args.threshold, list):
+        args.threshold = args.threshold[0]
+    if isinstance(args.boot_reps, list):
+        args.boot_reps = args.boot_reps[0]
     pl = Pipeline(args.folder, args.output, args.threshold, args.boot_reps)
-    pl.run()
+    pl.run("Phenotype", "Tissue")
