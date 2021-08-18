@@ -3,6 +3,7 @@
 import sys
 from typing import Callable, List, Tuple
 
+import pandas as pd
 import pytest
 
 import lta.helpers.data_handling as dh
@@ -29,19 +30,18 @@ def test_get_unique_columns(create_df: Callable) -> None:
     assert values == {"a", "b", "c"}
 
 
-@pytest.mark.parametrize("axis,shape", [("rows", (3, 6)), ("columns", (6, 3))])
-def test_not_zero_rows(
-    create_df: Callable, axis: Literal["rows", "columns"], shape: Tuple[int, int]
+@pytest.mark.parametrize("axis,shape", [("rows", (3, 2)), ("columns", (2, 3))])
+def test_not_zero(
+    binary_df: pd.DataFrame, axis: Literal["rows", "columns"], shape: Tuple[int, int]
 ) -> None:
     """It correctly groups 0s."""
-    df = dh.not_zero(create_df(dims=(6, 6)), axis, "y", 0.2)
-    # Need to think of way to test thresh accuracy
-    assert all([x == "bool" for x in df.dtypes])
     if axis == "rows":
-        assert df.index.names == ["x", "y", "z"]
+        df = dh.not_zero(binary_df.transpose(), axis, "y", 0.5)
     if axis == "columns":
-        assert df.index.names == ["x", "y", "z"]
+        df = dh.not_zero(binary_df, axis, "y", 0.5)
     assert df.shape == shape
+    assert df.index.names == list("xyz")
+    assert df.columns.names == list("xyz")
 
 
 @pytest.mark.parametrize(
