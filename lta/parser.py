@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 """The root `lta` parser.
 
-Functionality will be added during on-going refactoring from R.
-
-The current code represents a minimum functioning command.
-
 For a detailed description of the tool and how to use it,
 please see the README.
 A short overview is given here.
@@ -18,34 +14,63 @@ then a default of 0.2 is used.
 The number of bootstrap replicates to use for estimating the p-values
 can be specified with ``-b/--boot-reps``.
 Generally, higher repetitions increases accuracy,
-but there is little apparent improvement past ~20000 repetitions
-(the default).
+but there is little apparent improvement past ~10000 repetitions.
+A deault of 1000 is used to provide a balance between speed and accuracy.
+
+Many calculations are dependent on knowing where certain metadata is stored.
+Namely, the experimental conditions (specified with ``--phenotype``)
+and the tissue of origin (specified with ``--tissue``).
+If these are not passed,
+then they default to "Phenotype" and "Tissue", respectively.
+
+Finally,
+all options passed in an config file.
+This file expects values of the format ``option=value``.
+By default,
+the CLI looks for ``lta_conf.txt``,
+though any file can be specified with the ``-c/--config`` flag.
+Values in the config file override the defaults,
+and values passed to the CLI override the config file.
 
 Like all good CLIs,
-``-V/--version`` returns the version while ``-h/--help`` returns help.
+``-V`` returns the version while ``-h/--help`` returns help.
 
 Attributes
 ----------
 lta_parser : argparse.ArgumentParser
     The argument parser for the root command.
 """
-import argparse
 from pathlib import Path
+
+import configargparse
 
 from lta import __version__
 from lta.commands.run import run
 from lta.helpers.custom_types import FloatRange
 
-lta_parser = argparse.ArgumentParser(
-    prog="lta", description="Lipid Trafficking Analysis"
+lta_parser = configargparse.ArgumentParser(
+    prog="lta",
+    description="Lipid Trafficking Analysis",
+    allow_abbrev=False,
+    add_config_file_help=True,
+    default_config_files=["lta_conf.txt"],
+    ignore_unknown_config_file_keys=True,
+    formatter_class=configargparse.ArgumentDefaultsRawHelpFormatter,
 )
 
 lta_parser.add_argument(
     "-V",
-    "--version",
     action="version",
     version=f"LTA v{__version__}",
     help="Display version information and exit.",
+)
+
+lta_parser.add_argument(
+    "-c",
+    "--config",
+    is_config_file=True,
+    default="conf.yaml",
+    help="Config file location.",
 )
 
 lta_parser.add_argument(
@@ -79,6 +104,20 @@ lta_parser.add_argument(
     nargs=1,
     default=20000,
     help="Number of bootstrap repetitions",
+)
+
+lta_parser.add_argument(
+    "--phenotype",
+    type=str,
+    default="Phenotype",
+    help="Metadata label for experimental conditions",
+)
+
+lta_parser.add_argument(
+    "--tissue",
+    type=str,
+    default="Tissue",
+    help="Metadata label for sample tissue",
 )
 
 lta_parser.set_defaults(func=run)

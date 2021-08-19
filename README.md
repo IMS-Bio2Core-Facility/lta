@@ -72,7 +72,7 @@ A list of all released versions can be found at our [tags][tags].
 #### Installing from Source
 
 ```{important}
-Most users **will not need** these installing.
+Most users **will not need** these instructions.
 ```
 
 If you need to customise the code in some manner,
@@ -124,12 +124,6 @@ the command will error with an apropriate message.
 The secont argument identifies a folder in which the results will be saved.
 It will be create if it doesn't exist.
 
-```{warning}
-Re-running the analysis overwrites existing results,
-so be sure to either back up your data,
-or pass a different output folder!
-```
-
 If you ever have any questions about the tool,
 you can access a condensed help menu by running:
 
@@ -147,6 +141,7 @@ pass the ``-b/--boot-reps`` flag with a number.
 Generally, more reps improves the accuracy of the estimates,
 though I find little improvement beyond 20,000 reps
 (the default number).
+
 A critical step of the analysis is binarizing the lipid expression.
 A lipid is classed as 0 in a tissue/condition if
 the lipid is **not** detected in more than a particular fraction of cells.
@@ -155,6 +150,60 @@ If you want to change it,
 pass the ``-t/--threshold`` flag with a decimal between 0 and 1.
 This value can have a significant impact on the analysis,
 so explore how it impacts your data!
+
+Many calculations are dependent on knowing where certain metadata is stored.
+Namely, the experimental conditions (specified with ``--phenotype``)
+and the tissue of origin (specified with ``--tissue``).
+If these are not passed,
+then they default to "Phenotype" and "Tissue", respectively.
+
+If you find yourself regularly passing arguments via the CLI,
+you might want to try a configuration file!
+This is a simple text file that stores options in a simple format:
+
+```shell
+option=value
+```
+
+By default,
+LTA looks for ``lta_conf.txt`` in your current directory.
+However,
+you can name this file whatever you want,
+and let LTA know where to find it,
+by passing the config flag like so:
+
+```shell
+lta -c path/to/your/config.txt data results
+```
+
+If you specify an option in the configuration file,
+that will override LTA's defaults,
+and specifying an option at the command line will override the configuration file!
+
+### The Output
+
+```{warning}
+Re-running the analysis overwrites existing results,
+so be sure to either back up your data,
+or pass a different output folder!
+```
+
+The output folder will contain a number of files.
+For each type of lipid, you should see the following:
+
+1. A csv with the lipid type and tissue (if relevant)
+1. A csv ending in ``_counts.csv``
+1. A csv ending in ``_jaccard.csv``
+
+The first if a simple boolean list containing lipids that have been identified as
+the relevant type in any condition found within ``--phenotype``.
+The second contains these lipids counted and grouped by category.
+Finally,
+the third contains the Jaccard **distances** and a p-value,
+calculated using the method outlined by [N. Chung, et. al.][jaccard].
+If there are multiple modes within your data,
+then there will be 2 of each file,
+differentiated by the mode.
 
 ## Contributing
 
@@ -188,5 +237,6 @@ please cite the following manuscripts:
 [venv]: https://docs.python.org/3/tutorial/venv.html "Python venv"
 [tags]: https://github.com/IMS-Bio2Core-Facility/lta/releases "LTA releases"
 [issues]: https://github.com/IMS-Bio2Core-Facility/lta/issues "LTA issues"
+[jaccard]: https://doi.org/10.1186/s12859-019-3118-5 "Jaccard Probabilities"
 [paper_1]: https://www.nature.com/articles/s42003-021-01686-1 "LTA citation 1"
 [paper_2]: https://www.mdpi.com/1422-0067/22/14/7452 "LTA citation 2"
