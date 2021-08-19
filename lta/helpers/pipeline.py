@@ -215,7 +215,7 @@ class Pipeline:
         Lipids that are non-0 for n tissues in any Phenotype
         are considered N-lipids.
         Thus, lipids found in only 2 tissues are N2-lipids, etc.
-        U-lipids occur when ``n = 1`` - they are *U*nique.
+        U-lipids occur when ``n = 1`` as they are _U_nique.
 
         Parameters
         ----------
