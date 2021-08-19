@@ -42,14 +42,23 @@ lta_parser = configargparse.ArgumentParser(
     description="Lipid Trafficking Analysis",
     allow_abbrev=False,
     add_config_file_help=True,
-    default_config_files=["conf.yaml"],
+    default_config_files=["lta_conf.txt"],
     ignore_unknown_config_file_keys=True,
+    formatter_class=configargparse.ArgumentDefaultsRawHelpFormatter,
+)
+
+lta_parser.add_argument(
+    "-V",
+    action="version",
+    version=f"LTA v{__version__}",
+    help="Display version information and exit.",
 )
 
 lta_parser.add_argument(
     "-c",
     "--config",
     is_config_file=True,
+    default="conf.yaml",
     help="Config file location.",
 )
 
@@ -63,14 +72,6 @@ lta_parser.add_argument(
     "output",
     type=Path,
     help="Where to write output file.",
-)
-
-lta_parser.add_argument(
-    "-V",
-    "--version",
-    action="version",
-    version=f"LTA v{__version__}",
-    help="Display version information and exit.",
 )
 
 # The type ignore silence mypy.
@@ -107,4 +108,5 @@ lta_parser.add_argument(
     default="Tissue",
     help="Metadata label for sample tissue",
 )
+
 lta_parser.set_defaults(func=run)
