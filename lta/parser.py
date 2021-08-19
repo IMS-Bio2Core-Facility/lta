@@ -37,15 +37,7 @@ from lta.commands.run import run
 from lta.helpers.custom_types import FloatRange
 
 lta_parser = argparse.ArgumentParser(
-    prog="lta", description="Lipid Trafficking Analysis"
-)
-
-lta_parser.add_argument(
-    "-V",
-    "--version",
-    action="version",
-    version=f"LTA v{__version__}",
-    help="Display version information and exit.",
+    prog="lta", description="Lipid Trafficking Analysis", allow_abbrev=False
 )
 
 lta_parser.add_argument(
@@ -58,6 +50,14 @@ lta_parser.add_argument(
     "output",
     type=Path,
     help="Where to write output file.",
+)
+
+lta_parser.add_argument(
+    "-V",
+    "--version",
+    action="version",
+    version=f"LTA v{__version__}",
+    help="Display version information and exit.",
 )
 
 # The type ignore silence mypy.
@@ -81,4 +81,17 @@ lta_parser.add_argument(
     help="Number of bootstrap repetitions",
 )
 
+lta_parser.add_argument(
+    "--phenotype",
+    type=str,
+    default="Phenotype",
+    help="Metadata label for experimental conditions",
+)
+
+lta_parser.add_argument(
+    "--tissue",
+    type=str,
+    default="Tissue",
+    help="Metadata label for sample tissue",
+)
 lta_parser.set_defaults(func=run)

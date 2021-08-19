@@ -5,14 +5,17 @@ from _pytest import capture
 from lta.commands.run import run
 from lta.parser import lta_parser
 
+expected = """usage: lta [-h] [-V] [-t {[0, 1]}] [-b BOOT_REPS] [--phenotype PHENOTYPE]
+           [--tissue TISSUE]
+           folder output
+"""
+
 
 def test_correct_usage(capsys: capture.CaptureFixture) -> None:
     """It has the correct usage (ie. structure)."""
     lta_parser.print_usage()
     usage = capsys.readouterr()
-    assert (
-        usage.out == "usage: lta [-h] [-V] [-t {[0, 1]}] [-b BOOT_REPS] folder output\n"
-    ), "LTA's usage is incorrect."
+    assert usage.out == expected, "LTA's usage is incorrect."
 
 
 def test_default_func() -> None:
