@@ -182,23 +182,29 @@ class Pipeline:
         results = {}
         for mode, frames in data.items():
             pairs = itertools.combinations(frames, 2)
-            for first, second in pairs:
+            for (first, second) in pairs:
+                group = "_".join(
+                    [
+                        x.upper()
+                        for x in dh.get_unique_level(
+                            [first, second], axis="columns", level=tissue
+                        )
+                    ]
+                )
                 unified = first.join(second, how="inner")
-                groups = unified.columns.get_level_values(tissue).unique()
+
                 unified = (
                     unified.groupby(axis="columns", level=level)
                     .all()
                     .pipe(lambda x: x.loc[x.any(axis="columns"), :])
                 )
                 unified.droplevel(["Category", "m/z"]).to_csv(
-                    self.output
-                    / f"b{subtype}_lipids_{groups[0]}_{groups[1]}_{mode}.csv"
+                    self.output / f"b{subtype}_lipids_{group}_{mode}.csv"
                 )
                 unified.groupby(axis="rows", level="Category").sum().to_csv(
-                    self.output
-                    / f"b{subtype}_lipids_{groups[0]}_{groups[1]}_{mode}_counts.csv"
+                    self.output / f"b{subtype}_lipids_{group}_{mode}_counts.csv"
                 )
-                results[f"{groups[0]}_{groups[1]}_{mode}"] = unified
+                results[f"{group}_{mode}"] = unified
         return results
 
     def _get_n_lipids(self, level: str, tissue: str, n: int) -> Dict[str, pd.DataFrame]:
