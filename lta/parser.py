@@ -29,15 +29,28 @@ Attributes
 lta_parser : argparse.ArgumentParser
     The argument parser for the root command.
 """
-import argparse
 from pathlib import Path
+
+import configargparse
 
 from lta import __version__
 from lta.commands.run import run
 from lta.helpers.custom_types import FloatRange
 
-lta_parser = argparse.ArgumentParser(
-    prog="lta", description="Lipid Trafficking Analysis", allow_abbrev=False
+lta_parser = configargparse.ArgumentParser(
+    prog="lta",
+    description="Lipid Trafficking Analysis",
+    allow_abbrev=False,
+    add_config_file_help=True,
+    default_config_files=["conf.yaml"],
+    ignore_unknown_config_file_keys=True,
+)
+
+lta_parser.add_argument(
+    "-c",
+    "--config",
+    is_config_file=True,
+    help="Config file location.",
 )
 
 lta_parser.add_argument(

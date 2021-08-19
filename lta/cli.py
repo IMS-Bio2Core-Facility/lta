@@ -18,4 +18,5 @@ def main(args: Optional[argparse.Namespace] = None) -> None:
     """
     if args is None:
         args = lta_parser.parse_args()
+    lta_parser.print_values()
     args.func(args)
