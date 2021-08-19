@@ -93,7 +93,7 @@ class Pipeline:
         self.data = dh.split_data(frames, axis="columns", level="Mode")
         self.output.mkdir(exist_ok=True, parents=True)
 
-    def _get_a_lipids(self, level: str) -> None:
+    def _get_a_lipids(self, level: str) -> Dict[str, pd.DataFrame]:
         """Extract A-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
@@ -105,21 +105,27 @@ class Pipeline:
         ----------
         level : str
             The column metadata level that contains the experimental groups
+
+        Returns
+        -------
+        Dict[str, pd.DataFrame]
+            Key is group, value is data
         """
-        self.a_lipids = {
+        results = {
             mode: pd.concat(frames, join="inner", axis="columns")
             .groupby(axis="columns", level=level)
             .all()
             .pipe(lambda x: x.loc[x.any(axis="columns"), :])
             for mode, frames in self.data.items()
         }
-        for mode, data in self.a_lipids.items():
+        for mode, data in results.items():
             data.droplevel(["Category", "m/z"]).to_csv(
                 self.output / f"a_lipids_{mode}.csv"
             )
             data.groupby(axis="rows", level="Category").sum().to_csv(
                 self.output / f"a_lipids_{mode}_counts.csv"
             )
+        return results
 
     def _get_b_lipids(
         self, level: str, tissue: str, picky: bool = True
@@ -308,7 +314,7 @@ class Pipeline:
         tissue : str
             The column metadata containing sample tissue
         """
-        self._get_a_lipids(level)
+        self.a_lipids = self._get_a_lipids(level)
         self._jaccard(self.a_lipids, "a_lipids")
 
         self.u_lipids = self._get_n_lipids(level, tissue, 1)
