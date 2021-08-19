@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 """The root `lta` parser.
 
-Functionality will be added during on-going refactoring from R.
-
-The current code represents a minimum functioning command.
-
 For a detailed description of the tool and how to use it,
 please see the README.
 A short overview is given here.
@@ -18,11 +14,26 @@ then a default of 0.2 is used.
 The number of bootstrap replicates to use for estimating the p-values
 can be specified with ``-b/--boot-reps``.
 Generally, higher repetitions increases accuracy,
-but there is little apparent improvement past ~20000 repetitions
-(the default).
+but there is little apparent improvement past ~10000 repetitions.
+A deault of 1000 is used to provide a balance between speed and accuracy.
+
+Many calculations are dependent on knowing where certain metadata is stored.
+Namely, the experimental conditions (specified with ``--phenotype``)
+and the tissue of origin (specified with ``--tissue``).
+If these are not passed,
+then they default to "Phenotype" and "Tissue", respectively.
+
+Finally,
+all options passed in an config file.
+This file expects values of the format ``option=value``.
+By default,
+the CLI looks for ``lta_conf.txt``,
+though any file can be specified with the ``-c/--config`` flag.
+Values in the config file override the defaults,
+and values passed to the CLI override the config file.
 
 Like all good CLIs,
-``-V/--version`` returns the version while ``-h/--help`` returns help.
+``-V`` returns the version while ``-h/--help`` returns help.
 
 Attributes
 ----------

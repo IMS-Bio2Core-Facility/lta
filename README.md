@@ -72,7 +72,7 @@ A list of all released versions can be found at our [tags][tags].
 #### Installing from Source
 
 ```{important}
-Most users **will not need** these installing.
+Most users **will not need** these instructions.
 ```
 
 If you need to customise the code in some manner,
@@ -155,6 +155,29 @@ If you want to change it,
 pass the ``-t/--threshold`` flag with a decimal between 0 and 1.
 This value can have a significant impact on the analysis,
 so explore how it impacts your data!
+
+If you find yourself regularly passing arguments via the CLI,
+you might want to try a configuration file!
+This is a simple text file that stores options in a simple format:
+
+```shell
+option=value
+```
+
+By default,
+LTA looks for ``lta_conf.txt`` in your current directory.
+However,
+you can name this file whatever you want,
+and let LTA know where to find it,
+by passing the config flag like so:
+
+```shell
+lta -c path/to/your/config.txt data results
+```
+
+If you specify an option in the configuration file,
+that will override LTA's defaults,
+and specifying an option at the command line will override the configuration file!
 
 ## Contributing
 
