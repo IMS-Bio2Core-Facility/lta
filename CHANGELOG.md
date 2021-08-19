@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.8.0 (2021-08-19)
+### Feature
+* **pipeline:** Support N-lipids ([`9f0abbb`](https://github.com/IMS-Bio2Core-Facility/lta/commit/9f0abbbc4e905f521a60e8b65dbe4dcc1e7a7d18))
+
+### Fix
+* **pipeline:** Capitalise tissue names ([`06294fd`](https://github.com/IMS-Bio2Core-Facility/lta/commit/06294fdbd6e4b37827e30445d7698c2c676d585b))
+
 ## v0.7.0 (2021-08-18)
 ### Feature
 * **pipeline:** Split b-lipids ([`9254797`](https://github.com/IMS-Bio2Core-Facility/lta/commit/9254797220ee78147081c00129024e6da34d3f15))
