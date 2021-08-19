@@ -124,12 +124,6 @@ the command will error with an apropriate message.
 The secont argument identifies a folder in which the results will be saved.
 It will be create if it doesn't exist.
 
-```{warning}
-Re-running the analysis overwrites existing results,
-so be sure to either back up your data,
-or pass a different output folder!
-```
-
 If you ever have any questions about the tool,
 you can access a condensed help menu by running:
 
@@ -179,6 +173,31 @@ If you specify an option in the configuration file,
 that will override LTA's defaults,
 and specifying an option at the command line will override the configuration file!
 
+### The Output
+
+```{warning}
+Re-running the analysis overwrites existing results,
+so be sure to either back up your data,
+or pass a different output folder!
+```
+
+The output folder will contain a number of files.
+For each type of lipid, you should see the following:
+
+1. A csv with the lipid type and tissue (if relevant)
+1. A csv ending in ``_counts.csv``
+1. A csv ending in ``_jaccard.csv``
+
+The first if a simple boolean list containing lipids that have been identified as
+the relevant type in any condition found within ``--phenotype``.
+The second contains these lipids counted and grouped by category.
+Finally,
+the third contains the Jaccard **distances** and a p-value,
+calculated using the method outlined by [N. Chung, et. al.][jaccard].
+If there are multiple modes within your data,
+then there will be 2 of each file,
+differentiated by the mode.
+
 ## Contributing
 
 Open-source software is only open-source becaues of the excellent community,
@@ -211,5 +230,6 @@ please cite the following manuscripts:
 [venv]: https://docs.python.org/3/tutorial/venv.html "Python venv"
 [tags]: https://github.com/IMS-Bio2Core-Facility/lta/releases "LTA releases"
 [issues]: https://github.com/IMS-Bio2Core-Facility/lta/issues "LTA issues"
+[jaccard]: https://doi.org/10.1186/s12859-019-3118-5 "Jaccard Probabilities"
 [paper_1]: https://www.nature.com/articles/s42003-021-01686-1 "LTA citation 1"
 [paper_2]: https://www.mdpi.com/1422-0067/22/14/7452 "LTA citation 2"

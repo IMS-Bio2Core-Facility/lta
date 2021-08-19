@@ -13,7 +13,7 @@ Welcome, friend!
 Open-source software isn't open open-source without the community.
 We appreciate your interest and welcome all contributions.
 While your here,
-we respectfully ask that you abide by our [code of conduct](CODE_OF_CONDUCT.md).
+we respectfully ask that you abide by our [code of conduct](./coc.md).
 To help keep everything moving smoothly,
 we have a few guidelines.
 
