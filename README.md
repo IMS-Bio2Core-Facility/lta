@@ -141,6 +141,7 @@ pass the ``-b/--boot-reps`` flag with a number.
 Generally, more reps improves the accuracy of the estimates,
 though I find little improvement beyond 20,000 reps
 (the default number).
+
 A critical step of the analysis is binarizing the lipid expression.
 A lipid is classed as 0 in a tissue/condition if
 the lipid is **not** detected in more than a particular fraction of cells.
@@ -149,6 +150,12 @@ If you want to change it,
 pass the ``-t/--threshold`` flag with a decimal between 0 and 1.
 This value can have a significant impact on the analysis,
 so explore how it impacts your data!
+
+Many calculations are dependent on knowing where certain metadata is stored.
+Namely, the experimental conditions (specified with ``--phenotype``)
+and the tissue of origin (specified with ``--tissue``).
+If these are not passed,
+then they default to "Phenotype" and "Tissue", respectively.
 
 If you find yourself regularly passing arguments via the CLI,
 you might want to try a configuration file!
