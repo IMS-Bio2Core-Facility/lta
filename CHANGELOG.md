@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v0.9.0 (2021-08-19)
+### Feature
+* **parser:** Add phenotype and tissue flags ([`2acbcc7`](https://github.com/IMS-Bio2Core-Facility/lta/commit/2acbcc76fd8ed868304fd3c53afc52dff00a5e45))
+
+### Documentation
+* **data_handling:** Add docs for data-handling ([`5a52bd0`](https://github.com/IMS-Bio2Core-Facility/lta/commit/5a52bd0c8445b0b58330c977dac7e39a021cba8a))
+* **README:** Document all options ([`8c8ee48`](https://github.com/IMS-Bio2Core-Facility/lta/commit/8c8ee48e1733d2618631e425a1013029021fb3dd))
+* **README:** Document output of analysis ([`17a02e8`](https://github.com/IMS-Bio2Core-Facility/lta/commit/17a02e814c4b848b7de07612507c25dfa7825048))
+* **README:** Document config file ([`b05f8c9`](https://github.com/IMS-Bio2Core-Facility/lta/commit/b05f8c9325eeedba3c78771eb0fe293e575c78e6))
+
 ## v0.8.0 (2021-08-19)
 ### Feature
 * **pipeline:** Support N-lipids ([`9f0abbb`](https://github.com/IMS-Bio2Core-Facility/lta/commit/9f0abbbc4e905f521a60e8b65dbe4dcc1e7a7d18))
