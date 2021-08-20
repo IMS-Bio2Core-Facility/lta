@@ -93,7 +93,6 @@ lta_parser.add_argument(
     "--threshold",
     type=float,
     choices=FloatRange(0, 1),  # type: ignore
-    nargs=1,
     default=0.2,
     help="The '0' threshold",
 )
@@ -102,7 +101,6 @@ lta_parser.add_argument(
     "-b",
     "--boot-reps",
     type=int,
-    nargs=1,
     default=20000,
     help="Number of bootstrap repetitions",
 )
