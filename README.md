@@ -205,6 +205,14 @@ If there are multiple modes within your data,
 then there will be 2 of each file,
 differentiated by the mode.
 
+Additionally,
+there will be two ENFC files per mode.
+The firt contains the raw ENFC for each lipid,
+grouped by tissue.
+The second contains the mean and standard deviation of the ENFC,
+grouped by lipid Category and split by tissue.
+NaN/empty values mean that the lipid was a 0-lipid in that tissue.
+
 ## Contributing
 
 Open-source software is only open-source becaues of the excellent community,

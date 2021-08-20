@@ -40,12 +40,13 @@ class Pipeline:
         The magic of DataClasses!
         The post-init method allows for much of the processing normally required.
         Several things happen here.
-        The contents of folder are read into dataframes.
+        The contents of folder are read into dataframes,
+        and stored twice as binary data (for Switch Analysis)
+        and filtered counts (for ENFC Analysis).
         Should the folder not exist,
         or not be a directory,
         then the appropriate errors are logged.
         Also, output is created if it does not exist already.
-        Finally, the modes are extracted from the metadata.
 
         Raises
         ------
@@ -103,6 +104,27 @@ class Pipeline:
         self.output.mkdir(exist_ok=True, parents=True)
 
     def _calculate_enfc(self, level: str, tissue: str) -> Dict[str, pd.DataFrame]:
+        """Calculate error-normalised fold change.
+
+        Calculates the ENFC for each tissue across modes.
+        There are 2 outputs.
+        The first is the raw ENFC output.
+        The second is the mean and standard deviation of the ENFC,
+        grouped by lipid Category, for each tissue independently.
+        Empty/NaN values means that the lipid or category was a "0".
+
+        Parameters
+        ----------
+        level : str
+            The column metadata containing experimental groups
+        tissue : str
+            The column metadata containing sample tissue
+
+        Returns
+        -------
+        Dict[str, pd.DataFrame]
+            Key is group, value is data
+        """
         enfc = {
             mode: pd.concat(data, axis="columns", join="outer")
             .groupby(axis="columns", level=tissue)
@@ -335,8 +357,13 @@ class Pipeline:
     def run(self, level: str, tissue: str) -> None:
         """Run the full LTA pipeline.
 
-        This determines the various classes of lipids
-        as well as the distance between the respective vectors.
+        This:
+
+        #. Calculates error-normalised fold change
+        #. Finds A-lipids and Jaccard distances.
+        #. Finds U-lipids and Jaccard distances.
+        #. Finds B-lipids (both picky and consistent) and Jaccard distances.
+        #. Finds N2-lipids and Jaccard distances.
 
         Parameters
         ----------
