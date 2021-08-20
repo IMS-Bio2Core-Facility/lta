@@ -94,10 +94,29 @@ class Pipeline:
             )
             for df in frames
         ]
-        filtered = [x.loc[y.index, :] for x, y in zip(frames, binary)]
+        filtered = [
+            x.loc[y.index, :].droplevel(axis="columns", level=["Sample"])
+            for x, y in zip(frames, binary)
+        ]
         self.binary = dh.split_data(binary, axis="columns", level="Mode")
         self.filtered = dh.split_data(filtered, axis="columns", level="Mode")
         self.output.mkdir(exist_ok=True, parents=True)
+
+    def _calculate_enfc(self, level: str, tissue: str) -> Dict[str, pd.DataFrame]:
+        enfc = {
+            mode: pd.concat(data, axis="columns", join="outer")
+            .groupby(axis="columns", level=tissue)
+            .agg(dh.enfc, axis="columns", level=level, order=("obese", "lean"))
+            for mode, data in self.filtered.items()
+        }
+        for mode, df in enfc.items():
+            df.droplevel(["Category", "m/z"]).to_csv(
+                self.output / f"enfc_{mode}_all_tissues.csv"
+            )
+            df.groupby(axis="rows", level="Category").agg(["mean", "std"]).to_csv(
+                self.output / f"enfc_{mode}_grouped_all_tissues.csv"
+            )
+        return enfc
 
     def _get_a_lipids(self, level: str) -> Dict[str, pd.DataFrame]:
         """Extract A-lipids from the dataset.
@@ -326,6 +345,8 @@ class Pipeline:
         tissue : str
             The column metadata containing sample tissue
         """
+        self.enfc = self._calculate_enfc(level, tissue)
+
         self.a_lipids = self._get_a_lipids(level)
         self._jaccard(self.a_lipids, "a_lipids")
 
