@@ -101,7 +101,7 @@ lta_parser.add_argument(
     "-b",
     "--boot-reps",
     type=int,
-    default=20000,
+    default=1000,
     help="Number of bootstrap repetitions",
 )
 
