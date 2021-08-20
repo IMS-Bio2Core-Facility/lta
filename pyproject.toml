@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "LTA"
-version = "0.9.0"
+version = "0.10.0"
 description = "Lipid Trafficking Analysis"
 license = "MIT"
 authors = ["rbpatt2019 <rb.patterson.cross@gmail.com>"]

@@ -2,6 +2,19 @@
 
 <!--next-version-placeholder-->
 
+## v0.10.0 (2021-08-20)
+### Feature
+* **pipeline:** Calculate enfc ([`05ecf05`](https://github.com/IMS-Bio2Core-Facility/lta/commit/05ecf05fe6ab3264ed110950eb97055ccba23b70))
+* **data_handling:** Calculate enfc ([`e7c28af`](https://github.com/IMS-Bio2Core-Facility/lta/commit/e7c28af36730b913ef8fb648e9087256fefe19a9))
+
+### Fix
+* **parser:** Reduce boot-reps ([`5e339fb`](https://github.com/IMS-Bio2Core-Facility/lta/commit/5e339fbcef5971e14f27823509439fac4d59fe94))
+* **parser:** Do not specify nargs ([`41ec8fd`](https://github.com/IMS-Bio2Core-Facility/lta/commit/41ec8fda00037fd2e99a5df74ad0805bc7ff8aaf))
+* **command:** Order is now user option ([`7aa7413`](https://github.com/IMS-Bio2Core-Facility/lta/commit/7aa741393a394bca56699b8e1cede06d1401266c))
+
+### Documentation
+* **enfc:** Add support documentation ([`c1eb26e`](https://github.com/IMS-Bio2Core-Facility/lta/commit/c1eb26ed22e53a163e9755f44de4aec41c32d48b))
+
 ## v0.9.0 (2021-08-19)
 ### Feature
 * **parser:** Add phenotype and tissue flags ([`2acbcc7`](https://github.com/IMS-Bio2Core-Facility/lta/commit/2acbcc76fd8ed868304fd3c53afc52dff00a5e45))
