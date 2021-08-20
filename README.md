@@ -157,6 +157,21 @@ and the tissue of origin (specified with ``--tissue``).
 If these are not passed,
 then they default to "Phenotype" and "Tissue", respectively.
 
+For the fold-change calculation in ENFC to make any sense,
+we need to know which group in ``phenotype`` is which.
+You can specify this using the ``--order`` option like so:
+
+```shell
+lta data results --order obese lean
+```
+
+The first word following order will be treated as the experimental group,
+while the second word will be treated as the control group.
+In this example then,
+fold-change would be give as ``obese / lean``.
+If you don't specify,
+this defaults to ``experimental control``.
+
 If you find yourself regularly passing arguments via the CLI,
 you might want to try a configuration file!
 This is a simple text file that stores options in a simple format:
@@ -179,6 +194,8 @@ lta -c path/to/your/config.txt data results
 If you specify an option in the configuration file,
 that will override LTA's defaults,
 and specifying an option at the command line will override the configuration file!
+The config file doesn't need do exist, however,
+and is just a bit of sugar.
 
 ### The Output
 
@@ -204,6 +221,14 @@ calculated using the method outlined by [N. Chung, et. al.][jaccard].
 If there are multiple modes within your data,
 then there will be 2 of each file,
 differentiated by the mode.
+
+Additionally,
+there will be two ENFC files per mode.
+The firt contains the raw ENFC for each lipid,
+grouped by tissue.
+The second contains the mean and standard deviation of the ENFC,
+grouped by lipid Category and split by tissue.
+NaN/empty values mean that the lipid was a 0-lipid in that tissue.
 
 ## Contributing
 

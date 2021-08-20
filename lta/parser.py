@@ -54,6 +54,7 @@ lta_parser = configargparse.ArgumentParser(
     allow_abbrev=False,
     add_config_file_help=True,
     default_config_files=["lta_conf.txt"],
+    config_arg_is_required=False,
     ignore_unknown_config_file_keys=True,
     formatter_class=configargparse.ArgumentDefaultsRawHelpFormatter,
 )
@@ -68,8 +69,8 @@ lta_parser.add_argument(
 lta_parser.add_argument(
     "-c",
     "--config",
+    required=False,
     is_config_file=True,
-    default="conf.yaml",
     help="Config file location.",
 )
 
@@ -92,7 +93,6 @@ lta_parser.add_argument(
     "--threshold",
     type=float,
     choices=FloatRange(0, 1),  # type: ignore
-    nargs=1,
     default=0.2,
     help="The '0' threshold",
 )
@@ -101,8 +101,7 @@ lta_parser.add_argument(
     "-b",
     "--boot-reps",
     type=int,
-    nargs=1,
-    default=20000,
+    default=1000,
     help="Number of bootstrap repetitions",
 )
 
@@ -111,6 +110,14 @@ lta_parser.add_argument(
     type=str,
     default="Phenotype",
     help="Metadata label for experimental conditions",
+)
+
+lta_parser.add_argument(
+    "--order",
+    type=str,
+    nargs=2,
+    default=["experimental", "control"],
+    help="Experimental and control group labels",
 )
 
 lta_parser.add_argument(

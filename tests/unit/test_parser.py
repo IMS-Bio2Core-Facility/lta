@@ -6,7 +6,7 @@ from lta.commands.run import run
 from lta.parser import lta_parser
 
 expected = """usage: lta [-h] [-V] [-c CONFIG] [-t {[0, 1]}] [-b BOOT_REPS]
-           [--phenotype PHENOTYPE] [--tissue TISSUE]
+           [--phenotype PHENOTYPE] [--order ORDER ORDER] [--tissue TISSUE]
            folder output
 """
 

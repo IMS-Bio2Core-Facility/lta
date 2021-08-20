@@ -3,7 +3,7 @@
 import itertools
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -40,12 +40,13 @@ class Pipeline:
         The magic of DataClasses!
         The post-init method allows for much of the processing normally required.
         Several things happen here.
-        The contents of folder are read into dataframes.
+        The contents of folder are read into dataframes,
+        and stored twice as binary data (for Switch Analysis)
+        and filtered counts (for ENFC Analysis).
         Should the folder not exist,
         or not be a directory,
         then the appropriate errors are logged.
         Also, output is created if it does not exist already.
-        Finally, the modes are extracted from the metadata.
 
         Raises
         ------
@@ -58,26 +59,20 @@ class Pipeline:
         """
         try:
             frames: List[pd.DataFrame] = [
-                dh.not_zero(
-                    dh.construct_df(
-                        file,
-                        index_names=["Lipid", "Category", "m/z"],
-                        column_names=[
-                            "Sample",
-                            "Phenotype",
-                            "Generation",
-                            "Tissue",
-                            "Handling",
-                            "Mode",
-                        ],
-                        index_col=[0, 1, 2],
-                        header=list(range(3, 9)),
-                        skiprows=[9, 10, 11],
-                    ),
-                    axis="columns",
-                    level="Phenotype",
-                    thresh=self.thresh,
-                    drop=["Sample"],
+                dh.construct_df(
+                    file,
+                    index_names=["Lipid", "Category", "m/z"],
+                    column_names=[
+                        "Sample",
+                        "Phenotype",
+                        "Generation",
+                        "Tissue",
+                        "Handling",
+                        "Mode",
+                    ],
+                    index_col=[0, 1, 2],
+                    header=list(range(3, 9)),
+                    skiprows=[9, 10, 11],
                 )
                 for file in self.folder.iterdir()
             ]
@@ -90,8 +85,65 @@ class Pipeline:
         else:
             if len(frames) == 0:
                 raise RuntimeError(f"{self.folder} contains no data.")
-        self.data = dh.split_data(frames, axis="columns", level="Mode")
+        binary = [
+            dh.not_zero(
+                df,
+                axis="columns",
+                level="Phenotype",
+                thresh=self.thresh,
+                drop=["Sample"],
+            )
+            for df in frames
+        ]
+        filtered = [
+            x.loc[y.index, :].droplevel(axis="columns", level=["Sample"])
+            for x, y in zip(frames, binary)
+        ]
+        self.binary = dh.split_data(binary, axis="columns", level="Mode")
+        self.filtered = dh.split_data(filtered, axis="columns", level="Mode")
         self.output.mkdir(exist_ok=True, parents=True)
+
+    def _calculate_enfc(
+        self, level: str, tissue: str, order: Optional[Tuple[str, str]] = None
+    ) -> Dict[str, pd.DataFrame]:
+        """Calculate error-normalised fold change.
+
+        Calculates the ENFC for each tissue across modes.
+        There are 2 outputs.
+        The first is the raw ENFC output.
+        The second is the mean and standard deviation of the ENFC,
+        grouped by lipid Category, for each tissue independently.
+        Empty/NaN values means that the lipid or category was a "0".
+
+        Parameters
+        ----------
+        level : str
+            The column metadata containing experimental groups
+        tissue : str
+            The column metadata containing sample tissue
+        order : Tuple[str, str]
+            The experimental group labels.
+            The second is the control group.
+
+        Returns
+        -------
+        Dict[str, pd.DataFrame]
+            Key is group, value is data
+        """
+        enfc = {
+            mode: pd.concat(data, axis="columns", join="outer")
+            .groupby(axis="columns", level=tissue)
+            .agg(dh.enfc, axis="columns", level=level, order=order)
+            for mode, data in self.filtered.items()
+        }
+        for mode, df in enfc.items():
+            df.droplevel(["Category", "m/z"]).to_csv(
+                self.output / f"enfc_{mode}_all_tissues.csv"
+            )
+            df.groupby(axis="rows", level="Category").agg(["mean", "std"]).to_csv(
+                self.output / f"enfc_{mode}_grouped_all_tissues.csv"
+            )
+        return enfc
 
     def _get_a_lipids(self, level: str) -> Dict[str, pd.DataFrame]:
         """Extract A-lipids from the dataset.
@@ -116,7 +168,7 @@ class Pipeline:
             .groupby(axis="columns", level=level)
             .all()
             .pipe(lambda x: x.loc[x.any(axis="columns"), :])
-            for mode, frames in self.data.items()
+            for mode, frames in self.binary.items()
         }
         for mode, data in results.items():
             data.droplevel(["Category", "m/z"]).to_csv(
@@ -168,13 +220,13 @@ class Pipeline:
             # Which is definitely True
             if picky:
                 data = {
-                    mode: [df.drop(index=index) for df in self.data[mode]]
+                    mode: [df.drop(index=index) for df in self.binary[mode]]
                     for mode, index in a_lip.items()
                 }
                 subtype = "p"
             else:
                 data = {
-                    mode: [df.loc[index, :] for df in self.data[mode]]
+                    mode: [df.loc[index, :] for df in self.binary[mode]]
                     for mode, index in a_lip.items()
                 }
                 subtype = "c"
@@ -232,7 +284,7 @@ class Pipeline:
             Key is group and mode, value is data
         """
         results = {}
-        for mode, frames in self.data.items():
+        for mode, frames in self.binary.items():
             # This can be done with pipes, but its functional unreadable that way
             unified = pd.concat(frames, join="outer", axis="columns").fillna(False)
             unified = unified.droplevel(
@@ -307,11 +359,21 @@ class Pipeline:
                 dist["J_dist"] = 1 - dist["J_dist"]
                 dist.to_csv(self.output / f"{lipid_group}_{mode}_jaccard.csv")
 
-    def run(self, level: str, tissue: str) -> None:
+    def run(
+        self,
+        level: str,
+        tissue: str,
+        order: Tuple[str, str],
+    ) -> None:
         """Run the full LTA pipeline.
 
-        This determines the various classes of lipids
-        as well as the distance between the respective vectors.
+        This:
+
+        #. Calculates error-normalised fold change
+        #. Finds A-lipids and Jaccard distances.
+        #. Finds U-lipids and Jaccard distances.
+        #. Finds B-lipids (both picky and consistent) and Jaccard distances.
+        #. Finds N2-lipids and Jaccard distances.
 
         Parameters
         ----------
@@ -319,7 +381,11 @@ class Pipeline:
             The column metadata containing experimental groups
         tissue : str
             The column metadata containing sample tissue
+        order : Tuple[str, str]
+            The experimental and control group labels
         """
+        self.enfc = self._calculate_enfc(level, tissue, order)
+
         self.a_lipids = self._get_a_lipids(level)
         self._jaccard(self.a_lipids, "a_lipids")
 
