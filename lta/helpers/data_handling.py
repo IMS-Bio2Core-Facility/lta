@@ -9,8 +9,9 @@ by removing it from the harder to test context of the object.
 """
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Set
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
+import numpy as np
 import pandas as pd
 
 if sys.version_info >= (3, 8):
@@ -196,3 +197,53 @@ def not_zero(
             .transpose()
         )
     return df
+
+
+def enfc(
+    df: pd.DataFrame,
+    axis: Literal["rows", "columns"],
+    level: str,
+    order: Tuple[str, str] = ("experimental", "control"),
+) -> pd.Series:
+    """Calculate the error normalised fold change for a dataframe.
+
+    ENFC is defined as the log foldchange of lipid levels divide by the propagated error.
+    The mean and standard deviation are calculated on the groups in ``level``,
+    before applying the above calculation.
+    If you haven't filtered your data to remove lipids with no counts,
+    you're going to have a bad time.
+
+    By definition,
+    fold change requires an experimental and control group,
+    othewise the notion of up- or down-regulated makes no sense.
+    This function assumes these groups are named "experimental" and "control",
+    respectively,
+    though alternatives can be passed to the ``order`` argument.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The lipid data to convert to boolean
+    axis : Literal['rows', 'columns']
+        Which multiindex to consider
+    level : str
+        The level of the multiindex containing experimental conditions
+    order : Tuple[str, str]
+        default=('experimental', 'control')
+        The names of the conditions to compare.
+        Fold change will be ``order[0] / order[1]``.
+
+    Returns
+    -------
+    pd.DataFrame
+        The processed data.
+    """
+    logfc = np.log10(
+        df.groupby(axis=axis, level=level)
+        .mean()
+        .pipe(lambda df: df.loc[:, order[1]].div(df.loc[:, order[0]]))
+    )
+    error = (
+        df.groupby(axis=axis, level=level).std().pow(2).sum(axis=axis).div(2).pow(0.5)
+    )
+    return logfc.div(error)
