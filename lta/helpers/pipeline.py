@@ -58,26 +58,20 @@ class Pipeline:
         """
         try:
             frames: List[pd.DataFrame] = [
-                dh.not_zero(
-                    dh.construct_df(
-                        file,
-                        index_names=["Lipid", "Category", "m/z"],
-                        column_names=[
-                            "Sample",
-                            "Phenotype",
-                            "Generation",
-                            "Tissue",
-                            "Handling",
-                            "Mode",
-                        ],
-                        index_col=[0, 1, 2],
-                        header=list(range(3, 9)),
-                        skiprows=[9, 10, 11],
-                    ),
-                    axis="columns",
-                    level="Phenotype",
-                    thresh=self.thresh,
-                    drop=["Sample"],
+                dh.construct_df(
+                    file,
+                    index_names=["Lipid", "Category", "m/z"],
+                    column_names=[
+                        "Sample",
+                        "Phenotype",
+                        "Generation",
+                        "Tissue",
+                        "Handling",
+                        "Mode",
+                    ],
+                    index_col=[0, 1, 2],
+                    header=list(range(3, 9)),
+                    skiprows=[9, 10, 11],
                 )
                 for file in self.folder.iterdir()
             ]
@@ -90,7 +84,19 @@ class Pipeline:
         else:
             if len(frames) == 0:
                 raise RuntimeError(f"{self.folder} contains no data.")
-        self.data = dh.split_data(frames, axis="columns", level="Mode")
+        binary = [
+            dh.not_zero(
+                df,
+                axis="columns",
+                level="Phenotype",
+                thresh=self.thresh,
+                drop=["Sample"],
+            )
+            for df in frames
+        ]
+        filtered = [x.loc[y.index, :] for x, y in zip(frames, binary)]
+        self.binary = dh.split_data(binary, axis="columns", level="Mode")
+        self.filtered = dh.split_data(filtered, axis="columns", level="Mode")
         self.output.mkdir(exist_ok=True, parents=True)
 
     def _get_a_lipids(self, level: str) -> Dict[str, pd.DataFrame]:
@@ -116,7 +122,7 @@ class Pipeline:
             .groupby(axis="columns", level=level)
             .all()
             .pipe(lambda x: x.loc[x.any(axis="columns"), :])
-            for mode, frames in self.data.items()
+            for mode, frames in self.binary.items()
         }
         for mode, data in results.items():
             data.droplevel(["Category", "m/z"]).to_csv(
@@ -168,13 +174,13 @@ class Pipeline:
             # Which is definitely True
             if picky:
                 data = {
-                    mode: [df.drop(index=index) for df in self.data[mode]]
+                    mode: [df.drop(index=index) for df in self.binary[mode]]
                     for mode, index in a_lip.items()
                 }
                 subtype = "p"
             else:
                 data = {
-                    mode: [df.loc[index, :] for df in self.data[mode]]
+                    mode: [df.loc[index, :] for df in self.binary[mode]]
                     for mode, index in a_lip.items()
                 }
                 subtype = "c"
@@ -232,7 +238,7 @@ class Pipeline:
             Key is group and mode, value is data
         """
         results = {}
-        for mode, frames in self.data.items():
+        for mode, frames in self.binary.items():
             # This can be done with pipes, but its functional unreadable that way
             unified = pd.concat(frames, join="outer", axis="columns").fillna(False)
             unified = unified.droplevel(
