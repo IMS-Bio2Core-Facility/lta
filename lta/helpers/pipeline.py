@@ -3,7 +3,7 @@
 import itertools
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -103,7 +103,9 @@ class Pipeline:
         self.filtered = dh.split_data(filtered, axis="columns", level="Mode")
         self.output.mkdir(exist_ok=True, parents=True)
 
-    def _calculate_enfc(self, level: str, tissue: str) -> Dict[str, pd.DataFrame]:
+    def _calculate_enfc(
+        self, level: str, tissue: str, order: Optional[Tuple[str, str]] = None
+    ) -> Dict[str, pd.DataFrame]:
         """Calculate error-normalised fold change.
 
         Calculates the ENFC for each tissue across modes.
@@ -119,6 +121,9 @@ class Pipeline:
             The column metadata containing experimental groups
         tissue : str
             The column metadata containing sample tissue
+        order : Tuple[str, str]
+            The experimental group labels.
+            The second is the control group.
 
         Returns
         -------
@@ -128,7 +133,7 @@ class Pipeline:
         enfc = {
             mode: pd.concat(data, axis="columns", join="outer")
             .groupby(axis="columns", level=tissue)
-            .agg(dh.enfc, axis="columns", level=level, order=("obese", "lean"))
+            .agg(dh.enfc, axis="columns", level=level, order=order)
             for mode, data in self.filtered.items()
         }
         for mode, df in enfc.items():
@@ -354,7 +359,12 @@ class Pipeline:
                 dist["J_dist"] = 1 - dist["J_dist"]
                 dist.to_csv(self.output / f"{lipid_group}_{mode}_jaccard.csv")
 
-    def run(self, level: str, tissue: str) -> None:
+    def run(
+        self,
+        level: str,
+        tissue: str,
+        order: Tuple[str, str],
+    ) -> None:
         """Run the full LTA pipeline.
 
         This:
@@ -371,8 +381,10 @@ class Pipeline:
             The column metadata containing experimental groups
         tissue : str
             The column metadata containing sample tissue
+        order : Tuple[str, str]
+            The experimental and control group labels
         """
-        self.enfc = self._calculate_enfc(level, tissue)
+        self.enfc = self._calculate_enfc(level, tissue, order)
 
         self.a_lipids = self._get_a_lipids(level)
         self._jaccard(self.a_lipids, "a_lipids")

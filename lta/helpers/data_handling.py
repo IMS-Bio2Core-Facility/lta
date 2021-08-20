@@ -203,7 +203,7 @@ def enfc(
     df: pd.DataFrame,
     axis: Literal["rows", "columns"],
     level: str,
-    order: Tuple[str, str] = ("experimental", "control"),
+    order: Optional[Tuple[str, str]] = None,
 ) -> pd.Series:
     """Calculate the error normalised fold change for a dataframe.
 
@@ -228,7 +228,7 @@ def enfc(
         Which multiindex to consider
     level : str
         The level of the multiindex containing experimental conditions
-    order : Tuple[str, str]
+    order : Optional[Tuple[str, str]]
         default=('experimental', 'control')
         The names of the conditions to compare.
         Fold change will be ``order[0] / order[1]``.
@@ -238,6 +238,8 @@ def enfc(
     pd.DataFrame
         The processed data.
     """
+    if not order:
+        order = ("experimental", "control")
     logfc = np.log10(
         df.groupby(axis=axis, level=level)
         .mean()
