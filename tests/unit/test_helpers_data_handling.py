@@ -14,22 +14,6 @@ else:
     from typing_extensions import Literal
 
 
-def test_get_unique_rows(create_df: Callable) -> None:
-    """It checks the row axis."""
-    values = dh.get_unique_level(
-        [create_df(dims=(2, 2)), create_df(dims=(3, 2))], axis="rows", level="y"
-    )
-    assert values == {"a", "b", "c"}
-
-
-def test_get_unique_columns(create_df: Callable) -> None:
-    """It checks the columns axis."""
-    values = dh.get_unique_level(
-        [create_df(dims=(2, 2)), create_df(dims=(2, 3))], axis="columns", level="y"
-    )
-    assert values == {"a", "b", "c"}
-
-
 @pytest.mark.parametrize("axis,shape", [("rows", (3, 2)), ("columns", (2, 3))])
 def test_not_zero(
     binary_df: pd.DataFrame, axis: Literal["rows", "columns"], shape: Tuple[int, int]
