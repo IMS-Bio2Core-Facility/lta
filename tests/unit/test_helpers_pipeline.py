@@ -10,6 +10,7 @@ please reach out!
 """
 from pathlib import Path
 
+import pandas as pd
 import pytest
 from _pytest import capture
 from pytest_mock import MockerFixture
@@ -17,27 +18,26 @@ from pytest_mock import MockerFixture
 from lta.helpers import pipeline
 
 
-def test_raise_NotFound(mocker: MockerFixture, capsys: capture.CaptureFixture) -> None:
+def test_raise_NotFound(capsys: capture.CaptureFixture) -> None:
     """It handles FileNotFoundErrors."""
-    mocker.patch("lta.helpers.pipeline.Path.iterdir", side_effect=FileNotFoundError())
     with pytest.raises(FileNotFoundError):
-        pipeline.Pipeline(Path("foo"), Path("bar"), 0.2, 10)
+        pipeline.Pipeline(Path("foo.csv"), Path("bar"), "spam", "eggs", "green", 0.2, 1)
     out, err = capsys.readouterr()
-    assert out == "foo does not exist.\n"
+    assert out == "foo.csv does not exist.\n"
     assert err == ""
 
 
-def test_raise_NotDir(mocker: MockerFixture, capsys: capture.CaptureFixture) -> None:
+def test_raise_NotDir(tmp_path: Path, capsys: capture.CaptureFixture) -> None:
     """It handles NotADirectoryErrors."""
-    mocker.patch("lta.helpers.pipeline.Path.iterdir", side_effect=NotADirectoryError())
-    with pytest.raises(NotADirectoryError):
-        pipeline.Pipeline(Path("foo"), Path("bar"), 0.2, 10)
+    with pytest.raises(IsADirectoryError):
+        pipeline.Pipeline(tmp_path, Path("bar"), "spam", "eggs", "green", 0.2, 1)
     out, err = capsys.readouterr()
-    assert out == "foo is not directory.\n"
+    assert out == f"{tmp_path} is a directory.\n"
     assert err == ""
 
 
-def test_raise_Runtime(tmp_path: Path) -> None:
+def test_raise_Runtime(mocker: MockerFixture) -> None:
     """It fails if a directory is empty."""
+    mocker.patch("lta.helpers.data_handling.construct_df", return_value=pd.DataFrame())
     with pytest.raises(RuntimeError):
-        pipeline.Pipeline(tmp_path, Path("bar"), 0.2, 10)
+        pipeline.Pipeline(Path("foo"), Path("bar"), "spam", "eggs", "green", 0.2, 1)

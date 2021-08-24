@@ -91,7 +91,7 @@ class Pipeline:
             print(f"{self.file} does not exist.")
             raise
         except IsADirectoryError:
-            print(f"{self.file} is directory.")
+            print(f"{self.file} is a directory.")
             raise
         else:
             if data.shape[0] == 0:
