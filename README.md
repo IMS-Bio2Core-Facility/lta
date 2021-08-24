@@ -63,7 +63,7 @@ If you want to install a specific version,
 then change the last line in the previous code block to:
 
 ```shell
-pip install lta==0.5.0
+pip install lta==0.10.0
 ```
 
 replacing the version number with the version number you want.
@@ -83,21 +83,26 @@ or download one of our releases.
 For full instructions,
 please see our guide on [contributing](./contributing.md).
 
+(data)=
+
 ### The Data
 
-These should be CSV files where the first 11 rows contain sample data
+This should be a single CSV files where the first 11 rows contain sample metadata
 and the first 3 columns contain the lipid metadata.
 Within the sample metadata,
 rows 4-9 should contain the:
 
+- Mode (*ie.* -ve vs +ve)
 - Sample ID
 - Phenotype (*ie.* lean vs obese)
 - Generation (*ie.* F1 vs F2)
 - Tissue (*ie.* heart)
 - Handling (any notes about sample prep)
-- Mode (*ie.* -ve vs +ve)
 
 respectively.
+You can name these metadata rows whatever you want,
+and tell ``lta`` where to find them with the appropriate flags.
+Please see the section on [customising your run](customising).
 In order to read the data,
 some assumptions about the format must be made.
 Should we make any changes to data format expectations,
@@ -114,11 +119,12 @@ Once you've installed the tool and activated your virtual environment,
 running the analysis is as simple as:
 
 ```shell
-lta data results
+lta data.csv results
 ```
 
-The first argument is the folder containing the raw data files.
-If the folder doesn't exist,
+The first argument is path to the combined input file.
+If the file doesn't exist,
+is a directory,
 or doesn't contain any data files,
 the command will error with an apropriate message.
 The secont argument identifies a folder in which the results will be saved.
@@ -131,6 +137,8 @@ you can access a condensed help menu by running:
 lta -h
 ```
 
+(customising)=
+
 #### Customising
 
 There are a few options that can be customised for any given run.
@@ -139,8 +147,8 @@ which (by definition) involves repeated replicates.
 To control the number of replicates,
 pass the ``-b/--boot-reps`` flag with a number.
 Generally, more reps improves the accuracy of the estimates,
-though I find little improvement beyond 20,000 reps
-(the default number).
+though I find little improvement beyond 20,000 reps.
+1000 (the default number) seems to provide a good balance between speed and accuracy.
 
 A critical step of the analysis is binarizing the lipid expression.
 A lipid is classed as 0 in a tissue/condition if
@@ -153,9 +161,11 @@ so explore how it impacts your data!
 
 Many calculations are dependent on knowing where certain metadata is stored.
 Namely, the experimental conditions (specified with ``--phenotype``)
-and the tissue of origin (specified with ``--tissue``).
+the tissue of origin (specified with ``--tissue``),
+and the lipidomics mode (specified with ``--mode``).
 If these are not passed,
-then they default to "Phenotype" and "Tissue", respectively.
+then they default to "Phenotype", "Tissue", and "Mode" respectively.
+Please the section on [expected data file structure](data) for more information.
 
 For the fold-change calculation in ENFC to make any sense,
 we need to know which group in ``phenotype`` is which.
