@@ -107,7 +107,6 @@ def enfc(
     df: pd.DataFrame,
     axis: Literal["index", "columns"],
     level: str,
-    tissue: str,
     order: Optional[Tuple[str, str]] = None,
 ) -> pd.DataFrame:
     """Calculate the error normalised fold change for a dataframe.
@@ -131,8 +130,6 @@ def enfc(
         Which multiindex to consider
     level : str
         The level of the multiindex containing experimental conditions
-    tissue : str
-        The level of the multiindex containing tissue sample
     order : Optional[Tuple[str, str]]
         default=('experimental', 'control')
         The names of the conditions to compare.
@@ -146,21 +143,11 @@ def enfc(
     if not order:
         order = ("experimental", "control")
     logfc = np.log10(
-        df.groupby(axis=axis, level=[tissue, level])
+        df.groupby(axis=axis, level=level)
         .mean()
-        .pipe(
-            lambda x: x.xs(order[0], axis=axis, level=level).div(
-                x.xs(order[1], axis=axis, level=level)
-            )
-        )
+        .pipe(lambda x: x.loc[:, order[0]].div(x.loc[:, order[1]]))
     )
     error = (
-        df.groupby(axis=axis, level=[tissue, level])
-        .std()
-        .pow(2)
-        .groupby(axis=axis, level=tissue)
-        .sum()
-        .div(2)
-        .pow(0.5)
+        df.groupby(axis=axis, level=level).std().pow(2).sum(axis=axis).div(2).pow(0.5)
     )
     return logfc.div(error)

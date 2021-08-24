@@ -109,7 +109,7 @@ class Pipeline:
         self.output.mkdir(exist_ok=True, parents=True)
 
     def _calculate_enfc(
-        self, level: str, tissue: str, order: Optional[Tuple[str, str]] = None
+        self, order: Optional[Tuple[str, str]] = None
     ) -> Dict[str, pd.DataFrame]:
         """Calculate error-normalised fold change.
 
@@ -122,12 +122,9 @@ class Pipeline:
 
         Parameters
         ----------
-        level : str
-            The column metadata containing experimental groups
-        tissue : str
-            The column metadata containing sample tissue
         order : Tuple[str, str]
             The experimental group labels.
+            logfc fill be ``order[0] / order[1]``
             The second is the control group.
 
         Returns
@@ -136,10 +133,13 @@ class Pipeline:
             Key is group, value is data
         """
         enfc = {
-            mode: pd.concat(data, axis="columns", join="outer")
-            .groupby(axis="columns", level=tissue)
-            .agg(dh.enfc, axis="columns", level=level, order=order)
-            for mode, data in self.filtered.items()
+            mode: df.groupby(axis="columns", level=self.tissue).agg(
+                dh.enfc,
+                axis="columns",
+                level=self.level,
+                order=order,
+            )
+            for mode, df in self.filtered.items()
         }
         for mode, df in enfc.items():
             df.droplevel(["Category", "m/z"]).to_csv(
@@ -358,7 +358,7 @@ class Pipeline:
         order : Tuple[str, str]
             The experimental and control group labels
         """
-        self.enfc = self._calculate_enfc(level, tissue, order)
+        self.enfc = self._calculate_enfc(order)
 
         self.a_lipids = self._get_a_lipids()
         self._jaccard(self.a_lipids, "a_lipids")
