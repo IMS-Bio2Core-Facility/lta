@@ -70,6 +70,8 @@ def not_zero(
     Then, groupby the level of the specified multiindex,
     and mark a whole group as 0 if there are more than
     ``thresh * len(group)`` 0s.
+    Finally,
+    any lipid that is all 0 is dropped on the specified ``axis``
 
     Grouping occurs across tissue and level in that order.
 
@@ -115,6 +117,8 @@ def enfc(
     The mean and standard deviation are calculated on the groups in ``level``,
     before applying the above calculation.
 
+    Notes
+    -----
     By definition,
     fold change requires an experimental and control group,
     othewise the notion of up- or down-regulated makes no sense.

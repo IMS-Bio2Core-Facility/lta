@@ -19,7 +19,7 @@ class Pipeline:
 
     Attributes
     ----------
-    folder : Path
+    file : Path
         The path to the combined data input file.
     output : Path
         Where to save the results.
@@ -49,13 +49,16 @@ class Pipeline:
         The magic of DataClasses!
         The post-init method allows for much of the processing normally required.
         Several things happen here.
-        The contents of folder are read into dataframes,
+        The file is read into a dataframe,
+        which is split by ``Mode``,
         and stored twice as binary data (for Switch Analysis)
         and filtered counts (for ENFC Analysis).
-        Should the folder not exist,
-        or not be a directory,
+        Any sample which contains all 0-values is dropped.
+        Should the file not exist,
+        not contain any data,
+        or be a directory,
         then the appropriate errors are logged.
-        Also, output is created if it does not exist already.
+        Also, output folder is created if it does not exist already.
 
         Raises
         ------
@@ -81,7 +84,9 @@ class Pipeline:
                 index_col=[0, 1, 2],
                 header=list(range(2, 8)),
                 skiprows=[8, 9, 10, 11],
-            )
+            ).pipe(
+                lambda x: x.loc[:, x.any()]
+            )  # Drop all-0 samples
         except FileNotFoundError:
             print(f"{self.file} does not exist.")
             raise
@@ -91,7 +96,6 @@ class Pipeline:
         else:
             if data.shape[0] == 0:
                 raise RuntimeError(f"{self.file} contains no data.")
-            data = data.loc[:, data.any()]  # drops samples that are all 0
         self.binary = {
             group: dh.not_zero(
                 df,
@@ -124,13 +128,12 @@ class Pipeline:
         ----------
         order : Tuple[str, str]
             The experimental group labels.
-            logfc fill be ``order[0] / order[1]``
-            The second is the control group.
+            logfc fill be ``order[0] / order[1]``.
 
         Returns
         -------
         Dict[str, pd.DataFrame]
-            Key is group, value is data
+            Key is mode, value is the ENFC data
         """
         enfc = {
             mode: df.groupby(axis="columns", level=self.tissue).agg(
@@ -161,7 +164,7 @@ class Pipeline:
         Returns
         -------
         Dict[str, pd.DataFrame]
-            Key is group, value is data
+            Key is mode, value is table of A-lipids
         """
         results = {
             mode: (
@@ -188,6 +191,16 @@ class Pipeline:
         Lipids that are non-0 for any pair of tissues within any Phenotype
         are considered B-lipids.
 
+        Notes
+        -----
+        By definition,
+        all A-lipids will also be B-lipids for every pair of tissues.
+        These are referred to as B-consistent,
+        or Bc for short.
+        Those B-lipids that are not A-lipids are also known as B-picky,
+        or Bp for short.
+        Which set is calculated is controlled by the boolean flag ``picky``.
+
         Parameters
         ----------
         picky : bool
@@ -197,7 +210,8 @@ class Pipeline:
         Returns
         -------
         Dict[str, pd.DataFrame]
-            Keys are groupings with the B-lipids for that set
+            Keys are the tissue pair and mode.
+            Values are the table of B-lipids for that grouping.
 
         Raises
         ------
@@ -246,14 +260,21 @@ class Pipeline:
         return results
 
     def _get_n_lipids(self, n: int) -> Dict[str, pd.DataFrame]:
-        """Extract N-lipids from the dataset.
+        r"""Extract N-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
         is considered a total 0 for that lipid.
-        Lipids that are non-0 for n tissues in any Phenotype
+        Lipids that are non-0 for ``n`` tissues in any Phenotype
         are considered N-lipids.
-        Thus, lipids found in only 2 tissues are N2-lipids, etc.
-        U-lipids occur when ``n = 1`` as they are _U_nique.
+
+        Notes
+        -----
+        For historical consistency,
+        N1-lipids (*ie* those found in only 1 tissue) are called U-lipids
+        as they are **U**\nique.
+        Also N2-lipids are not the same as B-lipids.
+        A B-lipid could occur in multiple pairs of tissue,
+        while N2-lipids must only occur in 1.
 
         Parameters
         ----------
@@ -263,7 +284,8 @@ class Pipeline:
         Returns
         -------
         Dict[str, pd.DataFrame]
-            Key is group and mode, value is data
+            Keys are the tissue group and mode.
+            Values are the table of N-lipids for that grouping.
         """
         results = {}
         for mode, df in self.binary.items():
@@ -307,8 +329,15 @@ class Pipeline:
     def _jaccard(self, data: Dict[str, pd.DataFrame], lipid_group: str) -> None:
         """Calculate jaccard distances and p-values.
 
-        This takes a dictionary of data. As the output of each group of lipids will be
-        structured as such, if should be called per lipid group.
+        This takes a dictionary of data.
+        As the output of each group of lipids will be structured as such,
+        it should be called per lipid group.
+
+        Notes
+        -----
+        The P-values are calculated using a bootstrap approach on a centered Jaccard similarity.
+        Since Jaccard distance is simply 1 - Jaccard similarity,
+        The P-value for similarity may be taken as the P-value for distance, as well.
 
         Parameters
         ----------
@@ -333,12 +362,7 @@ class Pipeline:
                 dist["J_dist"] = 1 - dist["J_dist"]
                 dist.to_csv(self.output / f"{lipid_group}_{mode}_jaccard.csv")
 
-    def run(
-        self,
-        level: str,
-        tissue: str,
-        order: Tuple[str, str],
-    ) -> None:
+    def run(self, order: Tuple[str, str]) -> None:
         """Run the full LTA pipeline.
 
         This:
@@ -351,12 +375,9 @@ class Pipeline:
 
         Parameters
         ----------
-        level : str
-            The column metadata containing experimental groups
-        tissue : str
-            The column metadata containing sample tissue
         order : Tuple[str, str]
-            The experimental and control group labels
+            The experimental group labels.
+            logfc fill be ``order[0] / order[1]``.
         """
         self.enfc = self._calculate_enfc(order)
 
