@@ -3,7 +3,7 @@
 import itertools
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import pandas as pd
 
@@ -20,17 +20,26 @@ class Pipeline:
     Attributes
     ----------
     folder : Path
-        The directory containing the data.
+        The path to the combined data input file.
     output : Path
         Where to save the results.
+    level : str
+        Metadata location of experimental conditions
+    tissue : str
+        Metadata location of sample tissue compartment
+    mode : str
+        Metadata location of lipidomics mode
     thresh : float
         The fraction of samples that are 0 above which a lipid will be called 0 for a tissue.
     n : int
         Number of bootstrap replicates.
     """
 
-    folder: Path
+    file: Path
     output: Path
+    level: str
+    tissue: str
+    mode: str
     thresh: float
     n: int
 
@@ -51,56 +60,51 @@ class Pipeline:
         Raises
         ------
         FileNotFoundError
-            If self.folder does not exist.
-        NotADirectoryError
-            If self.folder is not a directory.
+            If self.file does not exist.
+        IsADirectoryError
+            If self.file is a directory.
         RuntimeError
             If there is no data in self.folder.
         """
         try:
-            frames: List[pd.DataFrame] = [
-                dh.construct_df(
-                    file,
-                    index_names=["Lipid", "Category", "m/z"],
-                    column_names=[
-                        "Sample",
-                        "Phenotype",
-                        "Generation",
-                        "Tissue",
-                        "Handling",
-                        "Mode",
-                    ],
-                    index_col=[0, 1, 2],
-                    header=list(range(3, 9)),
-                    skiprows=[9, 10, 11],
-                )
-                for file in self.folder.iterdir()
-            ]
+            data = dh.construct_df(
+                self.file,
+                index_names=["Lipid", "Category", "m/z"],
+                column_names=[
+                    "Mode",
+                    "Sample",
+                    "Phenotype",
+                    "Generation",
+                    "Tissue",
+                    "Handling",
+                ],
+                index_col=[0, 1, 2],
+                header=list(range(2, 8)),
+                skiprows=[8, 9, 10, 11],
+            )
         except FileNotFoundError:
-            print(f"{self.folder} does not exist.")
+            print(f"{self.file} does not exist.")
             raise
-        except NotADirectoryError:
-            print(f"{self.folder} is not directory.")
+        except IsADirectoryError:
+            print(f"{self.file} is directory.")
             raise
         else:
-            if len(frames) == 0:
-                raise RuntimeError(f"{self.folder} contains no data.")
-        binary = [
-            dh.not_zero(
+            if data.shape[0] == 0:
+                raise RuntimeError(f"{self.file} contains no data.")
+        self.binary = {
+            group: dh.not_zero(
                 df,
                 axis="columns",
-                level="Phenotype",
+                level=self.level,
+                tissue=self.tissue,
                 thresh=self.thresh,
-                drop=["Sample"],
             )
-            for df in frames
-        ]
-        filtered = [
-            x.loc[y.index, :].droplevel(axis="columns", level=["Sample"])
-            for x, y in zip(frames, binary)
-        ]
-        self.binary = dh.split_data(binary, axis="columns", level="Mode")
-        self.filtered = dh.split_data(filtered, axis="columns", level="Mode")
+            for group, df in data.groupby(axis="columns", level=self.mode)
+        }
+        self.filtered = {
+            group: df.loc[self.binary[group].index, :]
+            for group, df in data.groupby(axis="columns", level=self.mode)
+        }
         self.output.mkdir(exist_ok=True, parents=True)
 
     def _calculate_enfc(
