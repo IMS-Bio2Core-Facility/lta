@@ -245,7 +245,7 @@ class Pipeline:
                 results[f"{pairing}_{mode}"] = unified
         return results
 
-    def _get_n_lipids(self, level: str, tissue: str, n: int) -> Dict[str, pd.DataFrame]:
+    def _get_n_lipids(self, n: int) -> Dict[str, pd.DataFrame]:
         """Extract N-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
@@ -257,10 +257,6 @@ class Pipeline:
 
         Parameters
         ----------
-        level : str
-            The column metadata containing experimental groups
-        tissue : str
-            The column metadata containing sample tissue
         n : int
             The number of tissues to limit the search to
 
@@ -270,37 +266,29 @@ class Pipeline:
             Key is group and mode, value is data
         """
         results = {}
-        for mode, frames in self.binary.items():
-            # This can be done with pipes, but its functional unreadable that way
-            unified = pd.concat(frames, join="outer", axis="columns").fillna(False)
-            unified = unified.droplevel(
-                axis="columns",
-                level=[
-                    lvl for lvl in unified.columns.names if lvl not in [level, tissue]
-                ],
-            )
+        for mode, df in self.binary.items():
+            tissues = df.columns.get_level_values(self.tissue)
             # Mask required to prevent dropping levels
             # The initial check must be done with all tissues (only n)...
             mask = (
-                unified.groupby(axis="columns", level=tissue).any().sum(axis="columns")
+                df.groupby(axis="columns", level=self.tissue).any().sum(axis="columns")
                 == n
             )
-            unified = unified.loc[mask, :]
+
             data = [
-                (group, unified.loc[:, idx[:, list(group)]])
-                for group in itertools.combinations(
-                    dh.get_unique_level(frames, axis="columns", level=tissue), n
-                )
+                (group, df.loc[mask, tissues.isin(group)])
+                for group in itertools.combinations(tissues.unique(), n)
             ]
             # ...which necessitates a second check to drop those that are not
             # Again, mask necessary for keeping info
             # Also, we only care for groups with lipids
             masks = [
-                df.groupby(axis="columns", level=tissue).any().sum(axis="columns") == n
+                df.groupby(axis="columns", level=self.tissue).any().sum(axis="columns")
+                == n
                 for _, df in data
             ]
             data = [
-                (group, df.loc[mask, :].groupby(axis="columns", level=level).all())
+                (group, df.loc[mask, :].groupby(axis="columns", level=self.level).all())
                 for (group, df), mask in zip(data, masks)
                 if mask.sum() != 0
             ]
@@ -375,7 +363,7 @@ class Pipeline:
         self.a_lipids = self._get_a_lipids()
         self._jaccard(self.a_lipids, "a_lipids")
 
-        self.u_lipids = self._get_n_lipids(level, tissue, 1)
+        self.u_lipids = self._get_n_lipids(1)
         self._jaccard(self.u_lipids, "u_lipids")
 
         self.bc_lipids = self._get_b_lipids(picky=False)
@@ -383,5 +371,5 @@ class Pipeline:
         self._jaccard(self.bc_lipids, "bc_lipids")
         self._jaccard(self.bp_lipids, "bp_lipids")
 
-        self.n2_lipids = self._get_n_lipids(level, tissue, 2)
+        self.n2_lipids = self._get_n_lipids(2)
         self._jaccard(self.n2_lipids, "n2_lipids")
