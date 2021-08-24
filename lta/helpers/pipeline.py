@@ -149,7 +149,7 @@ class Pipeline:
             )
         return enfc
 
-    def _get_a_lipids(self, level: str) -> Dict[str, pd.DataFrame]:
+    def _get_a_lipids(self) -> Dict[str, pd.DataFrame]:
         """Extract A-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
@@ -157,22 +157,18 @@ class Pipeline:
         Lipids that are non-0 for all tissues in any Phenotype
         are considered A-lipids.
 
-        Parameters
-        ----------
-        level : str
-            The column metadata level that contains the experimental groups
-
         Returns
         -------
         Dict[str, pd.DataFrame]
             Key is group, value is data
         """
         results = {
-            mode: pd.concat(frames, join="inner", axis="columns")
-            .groupby(axis="columns", level=level)
-            .all()
-            .pipe(lambda x: x.loc[x.any(axis="columns"), :])
-            for mode, frames in self.binary.items()
+            mode: (
+                df.groupby(axis="columns", level=self.level)
+                .all()
+                .pipe(lambda x: x.loc[x.any(axis="columns"), :])
+            )
+            for mode, df in self.binary.items()
         }
         for mode, data in results.items():
             data.droplevel(["Category", "m/z"]).to_csv(
@@ -390,7 +386,7 @@ class Pipeline:
         """
         self.enfc = self._calculate_enfc(level, tissue, order)
 
-        self.a_lipids = self._get_a_lipids(level)
+        self.a_lipids = self._get_a_lipids()
         self._jaccard(self.a_lipids, "a_lipids")
 
         self.u_lipids = self._get_n_lipids(level, tissue, 1)
