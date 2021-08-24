@@ -91,6 +91,7 @@ class Pipeline:
         else:
             if data.shape[0] == 0:
                 raise RuntimeError(f"{self.file} contains no data.")
+            data = data.loc[:, data.any()]  # drops samples that are all 0
         self.binary = {
             group: dh.not_zero(
                 df,
@@ -179,9 +180,7 @@ class Pipeline:
             )
         return results
 
-    def _get_b_lipids(
-        self, level: str, tissue: str, picky: bool = True
-    ) -> Dict[str, pd.DataFrame]:
+    def _get_b_lipids(self, picky: bool = True) -> Dict[str, pd.DataFrame]:
         """Extract B-lipids from the dataset.
 
         Any tissue where more than self.thresh of the samples are 0
@@ -191,10 +190,6 @@ class Pipeline:
 
         Parameters
         ----------
-        level : str
-            The column metadata containing experimental groups
-        tissue : str
-            The column metadata containing sample tissue
         picky : bool
             default=True
             If true, do **not** consider lipids that are also A-lipids
@@ -216,47 +211,38 @@ class Pipeline:
             print("You must find A-lipids before B-lipids.")
             raise
         else:
-            # This assumes that self.data and a_lip will have the same keys
+            # This assumes that self.binary and a_lip will have the same keys
             # Which is definitely True
             if picky:
                 data = {
-                    mode: [df.drop(index=index) for df in self.binary[mode]]
-                    for mode, index in a_lip.items()
+                    mode: df.drop(index=a_lip[mode]) for mode, df in self.binary.items()
                 }
                 subtype = "p"
             else:
                 data = {
-                    mode: [df.loc[index, :] for df in self.binary[mode]]
-                    for mode, index in a_lip.items()
+                    mode: df.loc[a_lip[mode], :] for mode, df in self.binary.items()
                 }
                 subtype = "c"
 
         results = {}
-        for mode, frames in data.items():
-            pairs = itertools.combinations(frames, 2)
-            for (first, second) in pairs:
-                group = "_".join(
-                    [
-                        x.upper()
-                        for x in dh.get_unique_level(
-                            [first, second], axis="columns", level=tissue
-                        )
-                    ]
-                )
-                unified = first.join(second, how="inner")
-
+        for mode, df in data.items():
+            tissues = df.columns.get_level_values(self.tissue)
+            pairs = itertools.combinations(tissues.unique(), 2)
+            for group in pairs:
                 unified = (
-                    unified.groupby(axis="columns", level=level)
+                    df.loc[:, tissues.isin(group)]
+                    .groupby(axis="columns", level=self.level)
                     .all()
                     .pipe(lambda x: x.loc[x.any(axis="columns"), :])
                 )
+                pairing = "_".join([x.upper() for x in group])
                 unified.droplevel(["Category", "m/z"]).to_csv(
-                    self.output / f"b{subtype}_lipids_{group}_{mode}.csv"
+                    self.output / f"b{subtype}_lipids_{pairing}_{mode}.csv"
                 )
                 unified.groupby(axis="rows", level="Category").sum().to_csv(
-                    self.output / f"b{subtype}_lipids_{group}_{mode}_counts.csv"
+                    self.output / f"b{subtype}_lipids_{pairing}_{mode}_counts.csv"
                 )
-                results[f"{group}_{mode}"] = unified
+                results[f"{pairing}_{mode}"] = unified
         return results
 
     def _get_n_lipids(self, level: str, tissue: str, n: int) -> Dict[str, pd.DataFrame]:
@@ -392,8 +378,8 @@ class Pipeline:
         self.u_lipids = self._get_n_lipids(level, tissue, 1)
         self._jaccard(self.u_lipids, "u_lipids")
 
-        self.bc_lipids = self._get_b_lipids(level, tissue, picky=False)
-        self.bp_lipids = self._get_b_lipids(level, tissue, picky=True)
+        self.bc_lipids = self._get_b_lipids(picky=False)
+        self.bp_lipids = self._get_b_lipids(picky=True)
         self._jaccard(self.bc_lipids, "bc_lipids")
         self._jaccard(self.bp_lipids, "bp_lipids")
 
