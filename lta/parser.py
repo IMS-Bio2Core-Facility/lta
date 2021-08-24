@@ -5,7 +5,7 @@ For a detailed description of the tool and how to use it,
 please see the README.
 A short overview is given here.
 
-The location of the input data is the first positional argument,
+The location of the input data file is the first positional argument,
 while the location to which the output files should be saved is the second positional.
 The "0" threshold is specified with option ``-t/--threshold``.
 This should be passed as a floating point number between 0 and 1, inclusive.
@@ -18,13 +18,21 @@ but there is little apparent improvement past ~10000 repetitions.
 A deault of 1000 is used to provide a balance between speed and accuracy.
 
 Many calculations are dependent on knowing where certain metadata is stored.
-Namely, the experimental conditions (specified with ``--phenotype``)
-and the tissue of origin (specified with ``--tissue``).
+Namely, the experimental conditions (specified with ``--phenotype``),
+the tissue of origin (specified with ``--tissue``),
+and the lipidomics mode (specifed with ``--mode``).
 If these are not passed,
-then they default to "Phenotype" and "Tissue", respectively.
+then they default to "Phenotype", "Tissue", and "Mode" respectively.
+
+The error-normalised fold change (ENFC) calculation must know the labels for
+experimental and control group.
+Without this knowledge,
+the concept of fold change is meaningless.
+To specify, pass ``--order experimental control``.
+Fold change will always be given as ``experimental / control``.
 
 Finally,
-all options passed in an config file.
+all options *can be* passed in an config file.
 This file expects values of the format ``option=value``.
 By default,
 the CLI looks for ``lta_conf.txt``,
@@ -75,9 +83,9 @@ lta_parser.add_argument(
 )
 
 lta_parser.add_argument(
-    "folder",
+    "file",
     type=Path,
-    help="Location of the data files.",
+    help="Location of the input data csv file.",
 )
 
 lta_parser.add_argument(
@@ -125,6 +133,13 @@ lta_parser.add_argument(
     type=str,
     default="Tissue",
     help="Metadata label for sample tissue",
+)
+
+lta_parser.add_argument(
+    "--mode",
+    type=str,
+    default="Mode",
+    help="Metadata label for lipidomics mode",
 )
 
 lta_parser.set_defaults(func=run)
