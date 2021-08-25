@@ -138,6 +138,10 @@ def bootstrap(
     whose absolute value is greater than the absolute value of the observed
     statistic.
 
+    Note
+    ----
+    Returning a series facilitates applications with pandas and groupby.
+
     Parameters
     ----------
     x : np.ndarray

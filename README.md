@@ -215,30 +215,21 @@ so be sure to either back up your data,
 or pass a different output folder!
 ```
 
-The output folder will contain a number of files.
+The output folder will contain 5 file.
 For each type of lipid, you should see the following:
 
-1. A csv with the lipid type and tissue (if relevant)
-1. A csv ending in ``_counts.csv``
-1. A csv ending in ``_jaccard.csv``
+1. ``enfc_summary.csv`` - the ENFC results.
+1. ``enfc_summary_grouped.csv`` - the mean and St.Dev. of ENFC, grouped by lipid category.
+1. ``lipid_type_summary.csv`` - a table of lipids, and whether they were classified as the different lipid classes.
+1. ``lipid_count_summary.csv`` - a table counting the frequency of lipid category within lipid classes.
+1. ``jaccard_dist_summary.csv`` - the Jaccard distance and p-value for each lipid category.
 
-The first if a simple boolean list containing lipids that have been identified as
-the relevant type in any condition found within ``--phenotype``.
-The second contains these lipids counted and grouped by category.
-Finally,
-the third contains the Jaccard **distances** and a p-value,
-calculated using the method outlined by [N. Chung, et. al.][jaccard].
-If there are multiple modes within your data,
-then there will be 2 of each file,
-differentiated by the mode.
-
-Additionally,
-there will be two ENFC files per mode.
-The firt contains the raw ENFC for each lipid,
-grouped by tissue.
-The second contains the mean and standard deviation of the ENFC,
-grouped by lipid Category and split by tissue.
-NaN/empty values mean that the lipid was a 0-lipid in that tissue.
+A few notes!
+Fold change will **always** be ``order[0] / order[1]``.
+The Jaccard distances are calculated between conditions specified in ``--phenotype``
+across both tissues and lipid classes.
+The p-values for these distances are calculated using the method outlined by
+[N. Chung, et. al.][jaccard].
 
 ## Contributing
 

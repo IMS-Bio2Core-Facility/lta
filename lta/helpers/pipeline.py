@@ -118,11 +118,10 @@ class Pipeline:
         """Calculate error-normalised fold change.
 
         Calculates the ENFC for each tissue across modes.
-        There are 2 outputs.
-        The first is the raw ENFC output.
-        The second is the mean and standard deviation of the ENFC,
-        grouped by lipid Category, for each tissue independently.
-        Empty/NaN values means that the lipid or category was a "0".
+        For fold change to be meaningful,
+        order must be specified.
+        This will report fold-change as
+        ``order[0] / order[1]``.
 
         Parameters
         ----------
@@ -345,6 +344,7 @@ class Pipeline:
         #. Finds U-lipids and Jaccard distances.
         #. Finds B-lipids (both picky and consistent) and Jaccard distances.
         #. Finds N2-lipids and Jaccard distances.
+        #. Writes combined results.
 
         Parameters
         ----------
