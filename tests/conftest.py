@@ -1,38 +1,11 @@
 # -*- coding: utf-8 -*-
 """Fixtures for pytest."""
 from itertools import cycle, islice
-from pathlib import Path
 from typing import Callable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 import pytest
-
-
-@pytest.fixture  # type: ignore
-def tmp_folder() -> Path:  # type: ignore
-    """Create a temporary directory.
-
-    A pytest fixtures that creates a temporary directory locally for testing.
-    Pytest's default fixture for this,
-    as well as the built-in ``tempfile`` module,
-    do not play well with Github actions on Windows-latest.
-    The errors all result from a permission error in the tmpdir.
-    To circumvent this,
-    we create it local to the repository,
-    thus guaranteeing that we will have permission.
-    Additionally,
-    the fixture uses the ``yield`` structure to remove the directory once done.
-
-    Yields
-    ------
-    Path
-        The temporary directory
-    """
-    tmp = Path("tmp")
-    tmp.mkdir(parents=False, exist_ok=False)
-    yield tmp
-    tmp.rmdir()
 
 
 @pytest.fixture
