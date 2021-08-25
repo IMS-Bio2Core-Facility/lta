@@ -9,7 +9,6 @@ If you can provide any contributions towards better unit tests for data science,
 please reach out!
 """
 from pathlib import Path
-from tempfile import gettempdir
 
 import pandas as pd
 import pytest
@@ -28,14 +27,12 @@ def test_raise_NotFound(capsys: capture.CaptureFixture) -> None:
     assert err == ""
 
 
-def test_raise_NotDir(capsys: capture.CaptureFixture) -> None:
-    """It handles NotADirectoryErrors."""
+def test_raise_NotDir(tmp_folder: Path, capsys: capture.CaptureFixture) -> None:
+    """It handles IsADirectoryErrors."""
     with pytest.raises(IsADirectoryError):
-        pipeline.Pipeline(
-            Path(gettempdir()), Path("bar"), "spam", "eggs", "green", 0.2, 1
-        )
+        pipeline.Pipeline(tmp_folder, Path("bar"), "spam", "eggs", "green", 0.2, 1)
     out, err = capsys.readouterr()
-    assert out == f"{gettempdir()} is a directory.\n"
+    assert out == f"{tmp_folder} is a directory.\n"
     assert err == ""
 
 
