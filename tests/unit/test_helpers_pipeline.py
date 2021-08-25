@@ -27,17 +27,21 @@ def test_raise_NotFound(capsys: capture.CaptureFixture) -> None:
     assert err == ""
 
 
-def test_raise_NotDir(tmp_folder: Path, capsys: capture.CaptureFixture) -> None:
+def test_raise_NotDir(mocker: MockerFixture, capsys: capture.CaptureFixture) -> None:
     """It handles IsADirectoryErrors."""
+    # I don't like mocking, but troubleshooting permissions on Github actions is worse
+    mocker.patch(
+        "lta.helpers.data_handling.construct_df", side_effect=IsADirectoryError
+    )
     with pytest.raises(IsADirectoryError):
-        pipeline.Pipeline(tmp_folder, Path("bar"), "spam", "eggs", "green", 0.2, 1)
+        pipeline.Pipeline(Path("foo"), Path("bar"), "spam", "eggs", "green", 0.2, 1)
     out, err = capsys.readouterr()
-    assert out == f"{tmp_folder} is a directory.\n"
+    assert out == "foo is a directory.\n"
     assert err == ""
 
 
 def test_raise_Runtime(mocker: MockerFixture) -> None:
-    """It fails if a directory is empty."""
+    """It fails if a file is empty."""
     mocker.patch("lta.helpers.data_handling.construct_df", return_value=pd.DataFrame())
     with pytest.raises(RuntimeError):
         pipeline.Pipeline(Path("foo"), Path("bar"), "spam", "eggs", "green", 0.2, 1)

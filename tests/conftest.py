@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def tmp_folder() -> Path:  # type: ignore
     """Create a temporary directory.
 
