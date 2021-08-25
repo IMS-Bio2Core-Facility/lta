@@ -380,6 +380,12 @@ class Pipeline:
         """
         self.enfc = self._calculate_enfc(order)
 
+        enfc = pd.concat(self.enfc, axis="columns")
+        enfc.to_csv(self.output / "enfc_summary.csv")
+        enfc.groupby(axis="index", level="Category").agg(["mean", "std"]).to_csv(
+            self.output / "enfc_summary_grouped.csv"
+        )
+
         self.a_lipids = self._get_a_lipids()
         self.a_jaccard = self._jaccard(self.a_lipids)
 
