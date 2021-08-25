@@ -5,7 +5,7 @@ The code here represents a python implementation of the Jaccard package hosted
 `here <https://github.com/ncchung/jaccard>`_ by N. Chung. Its citation follows.
 
 Citation
-========
+--------
 Chung, N., Miasojedow, B., Startek, M., and Gambin, A. "Jaccard/Tanimoto similarity test and estimation methods for biological presence-absence data" BMC Bioinformatics (2019) 20(Suppl 15): 644. https://doi.org/10.1186/s12859-019-3118-5
 """
 from typing import Optional, Tuple
