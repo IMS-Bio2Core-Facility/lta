@@ -328,7 +328,7 @@ class Pipeline:
                 results[f"{n_type}_{group}_{mode}"] = df
         return results
 
-    def _jaccard(self, data: Dict[str, pd.DataFrame], lipid_group: str) -> None:
+    def _jaccard(self, data: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
         """Calculate jaccard distances and p-values.
 
         This takes a dictionary of data.
@@ -345,24 +345,21 @@ class Pipeline:
         ----------
         data : Dict[str, pd.DataFrame]
             A dictionary of modes and lipid data
-        lipid_group : str
-            The class of lipids analysed
+
+        Returns
+        -------
+        Dict[str, pd.DataFrame]
+            Keys are the tissue group and mode.
+            Values are the table of Jaccard distances and p-values.
         """
-        for mode, lipids in data.items():
-            if len(lipids) == 0:
-                # Overwrite if data is empty
-                (self.output / f"{lipid_group}_{mode}_jaccard.csv").write_text("")
-            else:
-                # Write if data exists
-                sim = lipids.groupby(axis="index", level="Category").apply(
-                    lambda df: jac.bootstrap(df.iloc[:, 0], df.iloc[:, 1], n=self.n)
-                )
-                dist = pd.DataFrame(
-                    sim.to_list(), index=sim.index, columns=["J_dist", "p-val"]
-                )
-                # Convert from similarity to distance
-                dist["J_dist"] = 1 - dist["J_dist"]
-                dist.to_csv(self.output / f"{lipid_group}_{mode}_jaccard.csv")
+        jaccard = {
+            mode: lipids.groupby(axis="index", level="Category")
+            .apply(lambda x: jac.bootstrap(x.iloc[:, 0], x.iloc[:, 1], self.n))
+            .rename(columns={"J-sim": "J_dist"})
+            .assign(J_dist=lambda x: 1 - x.loc[:, "J_dist"])
+            for mode, lipids in data.items()
+        }
+        return jaccard
 
     def run(self, order: Tuple[str, str]) -> None:
         """Run the full LTA pipeline.
@@ -384,18 +381,19 @@ class Pipeline:
         self.enfc = self._calculate_enfc(order)
 
         self.a_lipids = self._get_a_lipids()
-        self._jaccard(self.a_lipids, "a_lipids")
+        self.a_jaccard = self._jaccard(self.a_lipids)
 
         self.u_lipids = self._get_n_lipids(1)
-        self._jaccard(self.u_lipids, "u_lipids")
+        self.u_jaccard = self._jaccard(self.u_lipids)
 
         self.bc_lipids = self._get_b_lipids(picky=False)
+        self.bc_jaccard = self._jaccard(self.bc_lipids)
+
         self.bp_lipids = self._get_b_lipids(picky=True)
-        self._jaccard(self.bc_lipids, "bc_lipids")
-        self._jaccard(self.bp_lipids, "bp_lipids")
+        self.bp_jaccard = self._jaccard(self.bp_lipids)
 
         self.n2_lipids = self._get_n_lipids(2)
-        self._jaccard(self.n2_lipids, "n2_lipids")
+        self.n2_jaccard = self._jaccard(self.n2_lipids)
 
         summary = pd.concat(
             {
@@ -412,3 +410,16 @@ class Pipeline:
         summary.groupby(axis="index", level="Category").sum().to_csv(
             self.output / "lipid_count_summary.csv"
         )
+
+        jaccard = pd.concat(
+            {
+                **self.a_jaccard,
+                **self.bc_jaccard,
+                **self.bp_jaccard,
+                **self.n2_jaccard,
+                **self.u_jaccard,
+            },
+            axis="columns",
+        )
+        jaccard.columns.names = ["type_tissue_mode", "Metrics"]
+        jaccard.to_csv(self.output / "jaccard_dist_summary.csv")
