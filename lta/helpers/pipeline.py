@@ -148,7 +148,7 @@ class Pipeline:
             df.droplevel(["Category", "m/z"]).to_csv(
                 self.output / f"enfc_{mode}_all_tissues.csv"
             )
-            df.groupby(axis="rows", level="Category").agg(["mean", "std"]).to_csv(
+            df.groupby(axis="index", level="Category").agg(["mean", "std"]).to_csv(
                 self.output / f"enfc_{mode}_grouped_all_tissues.csv"
             )
         return enfc
@@ -167,7 +167,7 @@ class Pipeline:
             Key is mode, value is table of A-lipids
         """
         results = {
-            mode: (
+            f"a_{mode}": (
                 df.groupby(axis="columns", level=self.level)
                 .all()
                 .pipe(lambda x: x.loc[x.any(axis="columns"), :])
@@ -178,7 +178,7 @@ class Pipeline:
             data.droplevel(["Category", "m/z"]).to_csv(
                 self.output / f"a_lipids_{mode}.csv"
             )
-            data.groupby(axis="rows", level="Category").sum().to_csv(
+            data.groupby(axis="index", level="Category").sum().to_csv(
                 self.output / f"a_lipids_{mode}_counts.csv"
             )
         return results
@@ -229,12 +229,14 @@ class Pipeline:
             # Which is definitely True
             if picky:
                 data = {
-                    mode: df.drop(index=a_lip[mode]) for mode, df in self.binary.items()
+                    mode: df.drop(index=a_lip[f"a_{mode}"])
+                    for mode, df in self.binary.items()
                 }
                 subtype = "p"
             else:
                 data = {
-                    mode: df.loc[a_lip[mode], :] for mode, df in self.binary.items()
+                    mode: df.loc[a_lip[f"a_{mode}"], :]
+                    for mode, df in self.binary.items()
                 }
                 subtype = "c"
 
@@ -253,10 +255,10 @@ class Pipeline:
                 unified.droplevel(["Category", "m/z"]).to_csv(
                     self.output / f"b{subtype}_lipids_{pairing}_{mode}.csv"
                 )
-                unified.groupby(axis="rows", level="Category").sum().to_csv(
+                unified.groupby(axis="index", level="Category").sum().to_csv(
                     self.output / f"b{subtype}_lipids_{pairing}_{mode}_counts.csv"
                 )
-                results[f"{pairing}_{mode}"] = unified
+                results[f"b{subtype}_{pairing}_{mode}"] = unified
         return results
 
     def _get_n_lipids(self, n: int) -> Dict[str, pd.DataFrame]:
@@ -320,10 +322,10 @@ class Pipeline:
                 df.droplevel(["Category", "m/z"]).to_csv(
                     self.output / f"{n_type}_lipids_{group}_{mode}.csv"
                 )
-                df.groupby(axis="rows", level="Category").sum().to_csv(
+                df.groupby(axis="index", level="Category").sum().to_csv(
                     self.output / f"{n_type}_lipids_{group}_{mode}_counts.csv"
                 )
-                results[f"{group}_{mode}"] = df
+                results[f"{n_type}_{group}_{mode}"] = df
         return results
 
     def _jaccard(self, data: Dict[str, pd.DataFrame], lipid_group: str) -> None:
@@ -352,7 +354,7 @@ class Pipeline:
                 (self.output / f"{lipid_group}_{mode}_jaccard.csv").write_text("")
             else:
                 # Write if data exists
-                sim = lipids.groupby(axis="rows", level="Category").apply(
+                sim = lipids.groupby(axis="index", level="Category").apply(
                     lambda df: jac.bootstrap(df.iloc[:, 0], df.iloc[:, 1], n=self.n)
                 )
                 dist = pd.DataFrame(
@@ -394,3 +396,19 @@ class Pipeline:
 
         self.n2_lipids = self._get_n_lipids(2)
         self._jaccard(self.n2_lipids, "n2_lipids")
+
+        summary = pd.concat(
+            {
+                **self.a_lipids,
+                **self.bc_lipids,
+                **self.bp_lipids,
+                **self.n2_lipids,
+                **self.u_lipids,
+            },
+            axis="columns",
+        ).fillna(False)
+        summary.columns.names = ["type_tissue_mode", "Phenotype"]
+        summary.to_csv(self.output / "lipid_type_summary.csv")
+        summary.groupby(axis="index", level="Category").sum().to_csv(
+            self.output / "lipid_count_summary.csv"
+        )
