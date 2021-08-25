@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v0.10.1 (2021-08-25)
+### Fix
+* **repo:** Fix build failures ([`9ced474`](https://github.com/IMS-Bio2Core-Facility/lta/commit/9ced474825e59ae8cbacc20957917be16913b60d))
+
+### Documentation
+* **conftest:** Add conftest to sphinx ([`e2d9174`](https://github.com/IMS-Bio2Core-Facility/lta/commit/e2d9174664c77d0cd946fdde5dc9660981d00c9e))
+* **README:** Reflect unified input file usage ([`c7b18e9`](https://github.com/IMS-Bio2Core-Facility/lta/commit/c7b18e906f5087a605326fd031caf0e598c5c652))
+* **command:** Document unified input ([`58592ce`](https://github.com/IMS-Bio2Core-Facility/lta/commit/58592ce4ba844409030619c531aee7ed0500dae1))
+* **helpers:** Update docs to unified input ([`f94996c`](https://github.com/IMS-Bio2Core-Facility/lta/commit/f94996cbf937649df8cb6517fbc36de9e36d6f57))
+
 ## v0.10.0 (2021-08-20)
 ### Feature
 * **pipeline:** Calculate enfc ([`05ecf05`](https://github.com/IMS-Bio2Core-Facility/lta/commit/05ecf05fe6ab3264ed110950eb97055ccba23b70))
