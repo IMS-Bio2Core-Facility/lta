@@ -24,6 +24,9 @@ jobs:
       - name: Format and Lint
         run: nox -s form lint type
 
+  # The tmp dir is not correctly set in windows for python
+  # So it must be manually specified
+  # But only if matrix.os == 'windows-latest'
   test:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -40,7 +43,14 @@ jobs:
         uses: snok/install-poetry@v1.1.7
         with:
           version: 1.1.7
-      - name: Test Code and Docs
+      - name: Test Code and Docs (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          set TMP=%USERPROFILE%\AppData\Local\Temp
+          set TEMP=%USERPROFILE%\AppData\Local\Temp
+          nox -s tests
+      - name: Test Code and Docs (Mac/Ubuntu)
+        if: matrix.os == 'macos-latest' || matrix.os =='ubuntu-latest'
         run: nox -s tests
       - name: Upload to codecov
         uses: codecov/codecov-action@v2
