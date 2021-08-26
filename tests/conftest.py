@@ -21,9 +21,6 @@ def binary_df() -> pd.DataFrame:
     pd.DataFrame
         A binary dataframe of known properties
     """
-    indices = pd.MultiIndex.from_arrays(
-        [list("abc"), list("abc"), list("abc")], names=list("xyz")
-    )
     columns = pd.MultiIndex.from_arrays(
         [list("abc") * 3, list("abc") * 3, list("abc") * 3], names=list("xyz")
     )
@@ -32,7 +29,7 @@ def binary_df() -> pd.DataFrame:
         [1, 1, 1, 1, 1, 0, 0, 0, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1],
     ]
-    return pd.DataFrame(data, columns=columns, index=indices)
+    return pd.DataFrame(data, columns=columns, index=["a", "b", "c"])
 
 
 @pytest.fixture
