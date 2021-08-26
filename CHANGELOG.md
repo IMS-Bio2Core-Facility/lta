@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.11.1 (2021-08-26)
+### Fix
+* **data_handling:** Respect axis in enfc ([`2d727f7`](https://github.com/IMS-Bio2Core-Facility/lta/commit/2d727f716c06e972e4228f2932f572d5ed16b015))
+
 ## v0.11.0 (2021-08-26)
 ### Feature
 * **pipeline:** Support summary enfc ([`e927354`](https://github.com/IMS-Bio2Core-Facility/lta/commit/e927354caf4709f9a65eb1a5bb22b10ea90bcfda))
