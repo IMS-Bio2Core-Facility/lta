@@ -146,11 +146,11 @@ def enfc(
     """
     if not order:
         order = ("experimental", "control")
-    logfc = np.log10(
-        df.groupby(axis=axis, level=level)
-        .mean()
-        .pipe(lambda x: x.loc[:, order[0]].div(x.loc[:, order[1]]))
-    )
+    mean = df.groupby(axis=axis, level=level).mean()
+    if axis == "index":
+        logfc = np.log10(mean.loc[order[0], :].div(mean.loc[order[1], :]))
+    else:
+        logfc = np.log10(mean.loc[:, order[0]].div(mean.loc[:, order[1]]))
     error = (
         df.groupby(axis=axis, level=level).std().pow(2).sum(axis=axis).div(2).pow(0.5)
     )

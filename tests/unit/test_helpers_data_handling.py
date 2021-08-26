@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 """Unit tests for the data_handling module."""
 import sys
-from typing import Tuple
+from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal, assert_series_equal
+from pytest_mock import MockerFixture
 
 import lta.helpers.data_handling as dh
 
@@ -14,14 +17,82 @@ else:
     from typing_extensions import Literal
 
 
-@pytest.mark.parametrize("axis,shape", [("index", (3, 2)), ("columns", (2, 3))])
+def test_construct_df(mocker: MockerFixture) -> None:
+    """It drops NaNs."""
+    df = pd.DataFrame(
+        {"a": [np.nan, 1, 2], "b": [np.nan, 1, 2], "c": [np.nan, np.nan, np.nan]},
+        index=[0, 1, 2],
+    )
+
+    exp = pd.DataFrame({"a": [1, 2], "b": [1, 2]}, index=[1, 2], dtype=np.float64)
+    exp.index.names = ["x"]
+    exp.columns.names = ["y"]
+
+    # Any attempts to mock pandas in lta.helpers.data_handling
+    # Results in a slew of import errors
+    mocker.patch("pandas.read_csv", return_value=df)
+    results = dh.construct_df(Path("foo"), index_names=["x"], column_names=["y"])
+    assert_frame_equal(results, exp)
+
+
+@pytest.mark.parametrize("axis", ["index", "columns"])
 def test_not_zero(
-    binary_df: pd.DataFrame, axis: Literal["index", "columns"], shape: Tuple[int, int]
+    binary_df: pd.DataFrame,
+    axis: Literal["index", "columns"],
 ) -> None:
     """It correctly groups 0s."""
+    exp = pd.DataFrame(
+        {("a", "a"): [True, True], ("b", "b"): [True, True], ("c", "c"): [True, True]},
+        index=["b", "c"],
+    )
+    exp.columns.names = ["z", "y"]
+
     if axis == "index":
         df = dh.not_zero(binary_df.transpose(), axis, "y", "z", thresh=0.5)
+        assert_frame_equal(df, exp.transpose())
     else:
         df = dh.not_zero(binary_df, axis, "y", "z", 0.5)
-    assert df.shape == shape, "The shape after filtering is incorrect."
-    assert df.all().all(), "Groups were not correctly detected as not 0."
+        assert_frame_equal(df, exp)
+
+
+@pytest.mark.parametrize("axis", ["index", "columns"])
+def test_enfc_axis(axis: Literal["index", "columns"]) -> None:
+    """It respects the axis."""
+    df = pd.DataFrame(
+        {
+            ("A", "experimental"): [5, 0.5],
+            ("B", "experimental"): [15, 1.5],
+            ("A", "control"): [1.5, 15],
+            ("B", "control"): [0.5, 5],
+        }
+    )
+    df.columns.names = ["first", "second"]
+
+    exp = pd.Series([0.199007, -0.199007], index=[0, 1])
+
+    if axis == "index":
+        results = dh.enfc(df.transpose(), axis=axis, level="second")
+        assert_series_equal(results, exp)
+    else:
+        results = dh.enfc(df, axis=axis, level="second")
+        assert_series_equal(results, exp)
+
+
+def test_enfc_order() -> None:
+    """It respects passed order."""
+    df = pd.DataFrame(
+        {
+            ("A", "experimental"): [5, 0.5],
+            ("B", "experimental"): [15, 1.5],
+            ("A", "control"): [1.5, 15],
+            ("B", "control"): [0.5, 5],
+        }
+    )
+    df.columns.names = ["first", "second"]
+
+    exp = pd.Series([-0.199007, 0.199007], index=[0, 1])
+
+    results = dh.enfc(
+        df, axis="columns", level="second", order=("control", "experimental")
+    )
+    assert_series_equal(results, exp)
