@@ -118,11 +118,10 @@ class Pipeline:
         """Calculate error-normalised fold change.
 
         Calculates the ENFC for each tissue across modes.
-        There are 2 outputs.
-        The first is the raw ENFC output.
-        The second is the mean and standard deviation of the ENFC,
-        grouped by lipid Category, for each tissue independently.
-        Empty/NaN values means that the lipid or category was a "0".
+        For fold change to be meaningful,
+        order must be specified.
+        This will report fold-change as
+        ``order[0] / order[1]``.
 
         Parameters
         ----------
@@ -144,13 +143,6 @@ class Pipeline:
             )
             for mode, df in self.filtered.items()
         }
-        for mode, df in enfc.items():
-            df.droplevel(["Category", "m/z"]).to_csv(
-                self.output / f"enfc_{mode}_all_tissues.csv"
-            )
-            df.groupby(axis="rows", level="Category").agg(["mean", "std"]).to_csv(
-                self.output / f"enfc_{mode}_grouped_all_tissues.csv"
-            )
         return enfc
 
     def _get_a_lipids(self) -> Dict[str, pd.DataFrame]:
@@ -167,20 +159,13 @@ class Pipeline:
             Key is mode, value is table of A-lipids
         """
         results = {
-            mode: (
+            f"a_{mode}": (
                 df.groupby(axis="columns", level=self.level)
                 .all()
                 .pipe(lambda x: x.loc[x.any(axis="columns"), :])
             )
             for mode, df in self.binary.items()
         }
-        for mode, data in results.items():
-            data.droplevel(["Category", "m/z"]).to_csv(
-                self.output / f"a_lipids_{mode}.csv"
-            )
-            data.groupby(axis="rows", level="Category").sum().to_csv(
-                self.output / f"a_lipids_{mode}_counts.csv"
-            )
         return results
 
     def _get_b_lipids(self, picky: bool = True) -> Dict[str, pd.DataFrame]:
@@ -229,12 +214,14 @@ class Pipeline:
             # Which is definitely True
             if picky:
                 data = {
-                    mode: df.drop(index=a_lip[mode]) for mode, df in self.binary.items()
+                    mode: df.drop(index=a_lip[f"a_{mode}"])
+                    for mode, df in self.binary.items()
                 }
                 subtype = "p"
             else:
                 data = {
-                    mode: df.loc[a_lip[mode], :] for mode, df in self.binary.items()
+                    mode: df.loc[a_lip[f"a_{mode}"], :]
+                    for mode, df in self.binary.items()
                 }
                 subtype = "c"
 
@@ -250,13 +237,7 @@ class Pipeline:
                     .pipe(lambda x: x.loc[x.any(axis="columns"), :])
                 )
                 pairing = "_".join([x.upper() for x in group])
-                unified.droplevel(["Category", "m/z"]).to_csv(
-                    self.output / f"b{subtype}_lipids_{pairing}_{mode}.csv"
-                )
-                unified.groupby(axis="rows", level="Category").sum().to_csv(
-                    self.output / f"b{subtype}_lipids_{pairing}_{mode}_counts.csv"
-                )
-                results[f"{pairing}_{mode}"] = unified
+                results[f"b{subtype}_{pairing}_{mode}"] = unified
         return results
 
     def _get_n_lipids(self, n: int) -> Dict[str, pd.DataFrame]:
@@ -317,16 +298,10 @@ class Pipeline:
             for (tissues, df) in data:
                 n_type = "u" if n == 1 else f"n{n}"
                 group = "_".join([x.upper() for x in tissues])
-                df.droplevel(["Category", "m/z"]).to_csv(
-                    self.output / f"{n_type}_lipids_{group}_{mode}.csv"
-                )
-                df.groupby(axis="rows", level="Category").sum().to_csv(
-                    self.output / f"{n_type}_lipids_{group}_{mode}_counts.csv"
-                )
-                results[f"{group}_{mode}"] = df
+                results[f"{n_type}_{group}_{mode}"] = df
         return results
 
-    def _jaccard(self, data: Dict[str, pd.DataFrame], lipid_group: str) -> None:
+    def _jaccard(self, data: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
         """Calculate jaccard distances and p-values.
 
         This takes a dictionary of data.
@@ -343,24 +318,21 @@ class Pipeline:
         ----------
         data : Dict[str, pd.DataFrame]
             A dictionary of modes and lipid data
-        lipid_group : str
-            The class of lipids analysed
+
+        Returns
+        -------
+        Dict[str, pd.DataFrame]
+            Keys are the tissue group and mode.
+            Values are the table of Jaccard distances and p-values.
         """
-        for mode, lipids in data.items():
-            if len(lipids) == 0:
-                # Overwrite if data is empty
-                (self.output / f"{lipid_group}_{mode}_jaccard.csv").write_text("")
-            else:
-                # Write if data exists
-                sim = lipids.groupby(axis="rows", level="Category").apply(
-                    lambda df: jac.bootstrap(df.iloc[:, 0], df.iloc[:, 1], n=self.n)
-                )
-                dist = pd.DataFrame(
-                    sim.to_list(), index=sim.index, columns=["J_dist", "p-val"]
-                )
-                # Convert from similarity to distance
-                dist["J_dist"] = 1 - dist["J_dist"]
-                dist.to_csv(self.output / f"{lipid_group}_{mode}_jaccard.csv")
+        jaccard = {
+            mode: lipids.groupby(axis="index", level="Category")
+            .apply(lambda x: jac.bootstrap(x.iloc[:, 0], x.iloc[:, 1], self.n))
+            .rename(columns={"J-sim": "J_dist"})
+            .assign(J_dist=lambda x: 1 - x.loc[:, "J_dist"])
+            for mode, lipids in data.items()
+        }
+        return jaccard
 
     def run(self, order: Tuple[str, str]) -> None:
         """Run the full LTA pipeline.
@@ -372,6 +344,7 @@ class Pipeline:
         #. Finds U-lipids and Jaccard distances.
         #. Finds B-lipids (both picky and consistent) and Jaccard distances.
         #. Finds N2-lipids and Jaccard distances.
+        #. Writes combined results.
 
         Parameters
         ----------
@@ -381,16 +354,52 @@ class Pipeline:
         """
         self.enfc = self._calculate_enfc(order)
 
+        enfc = pd.concat(self.enfc, axis="columns")
+        enfc.to_csv(self.output / "enfc_summary.csv")
+        enfc.groupby(axis="index", level="Category").agg(["mean", "std"]).to_csv(
+            self.output / "enfc_summary_grouped.csv"
+        )
+
         self.a_lipids = self._get_a_lipids()
-        self._jaccard(self.a_lipids, "a_lipids")
+        self.a_jaccard = self._jaccard(self.a_lipids)
 
         self.u_lipids = self._get_n_lipids(1)
-        self._jaccard(self.u_lipids, "u_lipids")
+        self.u_jaccard = self._jaccard(self.u_lipids)
 
         self.bc_lipids = self._get_b_lipids(picky=False)
+        self.bc_jaccard = self._jaccard(self.bc_lipids)
+
         self.bp_lipids = self._get_b_lipids(picky=True)
-        self._jaccard(self.bc_lipids, "bc_lipids")
-        self._jaccard(self.bp_lipids, "bp_lipids")
+        self.bp_jaccard = self._jaccard(self.bp_lipids)
 
         self.n2_lipids = self._get_n_lipids(2)
-        self._jaccard(self.n2_lipids, "n2_lipids")
+        self.n2_jaccard = self._jaccard(self.n2_lipids)
+
+        summary = pd.concat(
+            {
+                **self.a_lipids,
+                **self.bc_lipids,
+                **self.bp_lipids,
+                **self.n2_lipids,
+                **self.u_lipids,
+            },
+            axis="columns",
+        ).fillna(False)
+        summary.columns.names = ["type_tissue_mode", "Phenotype"]
+        summary.to_csv(self.output / "lipid_type_summary.csv")
+        summary.groupby(axis="index", level="Category").sum().to_csv(
+            self.output / "lipid_count_summary.csv"
+        )
+
+        jaccard = pd.concat(
+            {
+                **self.a_jaccard,
+                **self.bc_jaccard,
+                **self.bp_jaccard,
+                **self.n2_jaccard,
+                **self.u_jaccard,
+            },
+            axis="columns",
+        )
+        jaccard.columns.names = ["type_tissue_mode", "Metrics"]
+        jaccard.to_csv(self.output / "jaccard_dist_summary.csv")

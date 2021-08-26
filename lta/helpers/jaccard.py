@@ -8,9 +8,10 @@ Citation
 --------
 Chung, N., Miasojedow, B., Startek, M., and Gambin, A. "Jaccard/Tanimoto similarity test and estimation methods for biological presence-absence data" BMC Bioinformatics (2019) 20(Suppl 15): 644. https://doi.org/10.1186/s12859-019-3118-5
 """
-from typing import Optional, Tuple
+from typing import Optional
 
 import numpy as np
+import pandas as pd
 
 
 def similarity(
@@ -130,12 +131,16 @@ def bootstrap(
     py: Optional[float] = None,
     n: int = 1000,
     seed: int = 42,
-) -> Tuple[float, float]:
+) -> pd.Series:
     """Use the bootstrap test to return a p-value.
 
     The p-value is defined as the fraction of values in the null statistic
     whose absolute value is greater than the absolute value of the observed
     statistic.
+
+    Note
+    ----
+    Returning a series facilitates applications with pandas and groupby.
 
     Parameters
     ----------
@@ -167,10 +172,10 @@ def bootstrap(
     j = similarity(x, y, center=False, px=px, py=py)
     if px == 1 or py == 1 or len(x) == x.sum() or len(y) == y.sum():
         print("Calculation is degenerate as at least one vector is all 1s.")
-        return (j, 1)
+        return pd.Series([j, 1], index=["J-sim", "p-val"])
     if px == 0 or py == 0 or x.sum() == 0 or y.sum() == 0:
         print("Calculation is degenerate as at least one vector is all 0s.")
-        return (j, 1)
+        return pd.Series([j, 1], index=["J-sim", "p-val"])
 
     j_obs = similarity(x, y, center=True, px=px, py=py)
 
@@ -185,4 +190,4 @@ def bootstrap(
     )
     j_null = np.fromiter(vals, dtype=np.float32, count=n)
     p_val = (np.abs(j_null, dtype=np.float32, out=j_null) >= np.abs(j_obs)).sum() / n
-    return j, p_val
+    return pd.Series([j, p_val], index=["J-sim", "p-val"])
