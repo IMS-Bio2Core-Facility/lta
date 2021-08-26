@@ -7,4 +7,4 @@ __version__ : str
     The version number,
     specified in the form 'major.minor.patch'
 """
-__version__ = "0.10.1"
+__version__ = "0.11.0"

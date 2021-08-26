@@ -2,6 +2,15 @@
 
 <!--next-version-placeholder-->
 
+## v0.11.0 (2021-08-26)
+### Feature
+* **pipeline:** Support summary enfc ([`e927354`](https://github.com/IMS-Bio2Core-Facility/lta/commit/e927354caf4709f9a65eb1a5bb22b10ea90bcfda))
+* **pipeline:** Summary jaccard output ([`742dde1`](https://github.com/IMS-Bio2Core-Facility/lta/commit/742dde161ad9c25926faafe56d66e5ef9c85d6b1))
+* **pipeline:** Output summary files ([`2e51efd`](https://github.com/IMS-Bio2Core-Facility/lta/commit/2e51efde9e30c7ffc66b236c847ea0a77951b935))
+
+### Documentation
+* **pipeline:** Document summary files ([`700c8fb`](https://github.com/IMS-Bio2Core-Facility/lta/commit/700c8fbb63e45d2dc4fb465f179d840652bef419))
+
 ## v0.10.1 (2021-08-25)
 ### Fix
 * **repo:** Fix build failures ([`9ced474`](https://github.com/IMS-Bio2Core-Facility/lta/commit/9ced474825e59ae8cbacc20957917be16913b60d))
