@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from pandas.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal, assert_series_equal
 from pytest_mock import MockerFixture
 
 import lta.helpers.data_handling as dh
@@ -53,3 +53,46 @@ def test_not_zero(
     else:
         df = dh.not_zero(binary_df, axis, "y", "z", 0.5)
         assert_frame_equal(df, exp)
+
+
+@pytest.mark.parametrize("axis", ["index", "columns"])
+def test_enfc_axis(axis: Literal["index", "columns"]) -> None:
+    """It respects the axis."""
+    df = pd.DataFrame(
+        {
+            ("A", "experimental"): [5, 0.5],
+            ("B", "experimental"): [15, 1.5],
+            ("A", "control"): [1.5, 15],
+            ("B", "control"): [0.5, 5],
+        }
+    )
+    df.columns.names = ["first", "second"]
+
+    exp = pd.Series([0.199007, -0.199007], index=[0, 1])
+
+    if axis == "index":
+        results = dh.enfc(df.transpose(), axis=axis, level="second")
+        assert_series_equal(results, exp)
+    else:
+        results = dh.enfc(df, axis=axis, level="second")
+        assert_series_equal(results, exp)
+
+
+def test_enfc_order() -> None:
+    """It respects passed order."""
+    df = pd.DataFrame(
+        {
+            ("A", "experimental"): [5, 0.5],
+            ("B", "experimental"): [15, 1.5],
+            ("A", "control"): [1.5, 15],
+            ("B", "control"): [0.5, 5],
+        }
+    )
+    df.columns.names = ["first", "second"]
+
+    exp = pd.Series([-0.199007, 0.199007], index=[0, 1])
+
+    results = dh.enfc(
+        df, axis="columns", level="second", order=("control", "experimental")
+    )
+    assert_series_equal(results, exp)
