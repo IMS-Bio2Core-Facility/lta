@@ -143,3 +143,4 @@ scratch.*
 data/
 results/
 Makefile
+logs

@@ -75,6 +75,13 @@ lta_parser.add_argument(
 )
 
 lta_parser.add_argument(
+    "-v",
+    action="count",
+    default=0,
+    help="Increase verbosity.",
+)
+
+lta_parser.add_argument(
     "-c",
     "--config",
     required=False,
