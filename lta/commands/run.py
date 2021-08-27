@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 """A simple sample function for the CLI."""
+import logging
+
 import configargparse
 
 from lta.helpers.pipeline import Pipeline
+
+logger = logging.getLogger(__name__)
 
 
 def run(args: configargparse.Namespace) -> None:
@@ -19,6 +23,7 @@ def run(args: configargparse.Namespace) -> None:
     args: configargparse.Namespace
         The passed args.
     """
+    logger.debug("Instantiating pipeline instance.")
     pl = Pipeline(
         args.file,
         args.output,
@@ -28,4 +33,5 @@ def run(args: configargparse.Namespace) -> None:
         args.threshold,
         args.boot_reps,
     )
+    logger.debug("Running pipeline.")
     pl.run(args.order)

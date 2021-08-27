@@ -191,14 +191,10 @@ def bootstrap(
 
     j = similarity(x, y, center=False, px=px, py=py)
     if px == 1 or py == 1 or len(x) == x.sum() or len(y) == y.sum():
-        logger.warning(
-            f"Bootstrap is degenerate as at least one vector is all 1s: x: {x} y: {y}"
-        )
+        logger.warning("Bootstrap is degenerate as at least one vector is all 1.")
         return pd.Series([j, 1], index=["J-sim", "p-val"])
     if px == 0 or py == 0 or x.sum() == 0 or y.sum() == 0:
-        logger.warning(
-            f"Bootstrap is degenerate as at least one vector is all 0s: x: {x} y: {y}"
-        )
+        logger.warning("Bootstrap is degenerate as at least one vector is all 0.")
         return pd.Series([j, 1], index=["J-sim", "p-val"])
 
     j_obs = similarity(x, y, center=True, px=px, py=py)

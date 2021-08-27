@@ -25,25 +25,39 @@ def main(args: Optional[configargparse.Namespace] = None) -> None:
     if args is None:
         args = lta_parser.parse_args()
 
-    # Configure logging
+    # Configure logging file directory
     now = datetime.now().strftime("%Y:%m:%d:%H:%M:%S")
     logs = Path("logs")
     logs.mkdir(parents=False, exist_ok=True)
 
+    # Get verbosity level
+    verbosity = {
+        0: logging.ERROR,
+        1: logging.WARNING,
+        2: logging.INFO,
+        3: logging.DEBUG,
+    }
+    level = verbosity.get(args.verbose, logging.DEBUG)
+
+    # Configure formatter
     formatter = logging.Formatter(
         "{asctime} :: {levelname} :: {name} :: {message}", style="{"
     )
+
+    # Configure handlers
     handlers = [
         logging.FileHandler(logs / f"{now}.log"),
         logging.StreamHandler(),
     ]  # file future arg flag?
     for h in handlers:
-        h.setLevel(logging.INFO)  # Change with arg flag
+        h.setLevel(level)
         h.setFormatter(formatter)
-    logging.basicConfig(level=logging.INFO, handlers=handlers)  # Changer with arg flag
+
+    # Configure root logger
+    logging.basicConfig(level=level, handlers=handlers)
     logger = logging.getLogger(__name__)
 
-    logger.info(
-        f"Running LTA with the following parameters:\n{lta_parser.format_values()}"
+    logger.log(
+        45, f"Running LTA with the following parameters:\n{lta_parser.format_values()}"
     )
     args.func(args)
