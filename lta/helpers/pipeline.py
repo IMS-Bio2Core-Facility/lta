@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """A dataclass that allows for an object oriented pipeline."""
 import itertools
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional, Tuple
@@ -10,7 +11,7 @@ import pandas as pd
 import lta.helpers.data_handling as dh
 import lta.helpers.jaccard as jac
 
-idx = pd.IndexSlice
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -66,10 +67,11 @@ class Pipeline:
             If self.file does not exist.
         IsADirectoryError
             If self.file is a directory.
-        RuntimeError
-            If there is no data in self.folder.
+        pd.errors.EmptyDataError
+            If there is no data in self.file.
         """
         try:
+            logging.debug(f"Reading data from {self.file}...")
             data = dh.construct_df(
                 self.file,
                 index_names=["Lipid", "Category", "m/z"],
@@ -88,14 +90,21 @@ class Pipeline:
                 lambda x: x.loc[:, x.any()]
             )  # Drop all-0 samples
         except FileNotFoundError:
-            print(f"{self.file} does not exist.")
+            logging.exception(
+                f"{self.file} does not exist. A full traceback follows..."
+            )
             raise
         except IsADirectoryError:
-            print(f"{self.file} is a directory.")
+            logging.exception(
+                f"{self.file} is a directory. A full traceback follows..."
+            )
             raise
-        else:
-            if data.shape[0] == 0:
-                raise RuntimeError(f"{self.file} contains no data.")
+        except pd.errors.EmptyDataError:
+            logging.exception(
+                f"{self.file} contains no data. A full traceback follows..."
+            )
+            raise
+        logging.debug("Binarizing data...")
         self.binary = {
             group: dh.not_zero(
                 df,
@@ -106,6 +115,7 @@ class Pipeline:
             )
             for group, df in data.groupby(axis="columns", level=self.mode)
         }
+        logging.debug("Filtering data...")
         self.filtered = {
             group: df.loc[self.binary[group].index, :]
             for group, df in data.groupby(axis="columns", level=self.mode)
@@ -134,6 +144,7 @@ class Pipeline:
         Dict[str, pd.DataFrame]
             Key is mode, value is the ENFC data
         """
+        logger.info("Calculating ENFC...")
         enfc = {
             mode: df.groupby(axis="columns", level=self.tissue).agg(
                 dh.enfc,
@@ -158,6 +169,7 @@ class Pipeline:
         Dict[str, pd.DataFrame]
             Key is mode, value is table of A-lipids
         """
+        logger.info("Calculating A-lipids...")
         results = {
             f"a_{mode}": (
                 df.groupby(axis="columns", level=self.level)
@@ -207,7 +219,7 @@ class Pipeline:
         try:
             a_lip = {mode: df.index for mode, df in self.a_lipids.items()}
         except AttributeError:
-            print("You must find A-lipids before B-lipids.")
+            logging.exception("You must find A-lipids before B-lipids.")
             raise
         else:
             # This assumes that self.binary and a_lip will have the same keys
@@ -225,11 +237,14 @@ class Pipeline:
                 }
                 subtype = "c"
 
+        logger.info(f"Calculating B{subtype}-lipids...")
         results = {}
         for mode, df in data.items():
+            logger.debug(f"Calculating B{subtype}-lipids for {mode}...")
             tissues = df.columns.get_level_values(self.tissue)
             pairs = itertools.combinations(tissues.unique(), 2)
             for group in pairs:
+                logger.debug(f"Calculating B{subtype}-lipids for {group}...")
                 unified = (
                     df.loc[:, tissues.isin(group)]
                     .groupby(axis="columns", level=self.level)
@@ -268,8 +283,10 @@ class Pipeline:
             Keys are the tissue group and mode.
             Values are the table of N-lipids for that grouping.
         """
+        logger.info(f"Calculating N{n}-lipids...")
         results = {}
         for mode, df in self.binary.items():
+            logger.debug(f"Calculating N{n}-lipids for {mode}...")
             tissues = df.columns.get_level_values(self.tissue)
             # Mask required to prevent dropping levels
             # The initial check must be done with all tissues (only n)...
@@ -282,6 +299,9 @@ class Pipeline:
                 (group, df.loc[mask, tissues.isin(group)])
                 for group in itertools.combinations(tissues.unique(), n)
             ]
+            logger.debug(
+                f"N{n} tissue groups before filtering: {[group for group, _ in data]}"
+            )
             # ...which necessitates a second check to drop those that are not
             # Again, mask necessary for keeping info
             # Also, we only care for groups with lipids
@@ -295,13 +315,18 @@ class Pipeline:
                 for (group, df), mask in zip(data, masks)
                 if mask.sum() != 0
             ]
+            logger.debug(
+                f"N{n} tissue groups after filtering: {[group for group, _ in data]}"
+            )
             for (tissues, df) in data:
                 n_type = "u" if n == 1 else f"n{n}"
                 group = "_".join([x.upper() for x in tissues])
                 results[f"{n_type}_{group}_{mode}"] = df
         return results
 
-    def _jaccard(self, data: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
+    def _jaccard(
+        self, data: Dict[str, pd.DataFrame], group: str
+    ) -> Dict[str, pd.DataFrame]:
         """Calculate jaccard distances and p-values.
 
         This takes a dictionary of data.
@@ -318,6 +343,9 @@ class Pipeline:
         ----------
         data : Dict[str, pd.DataFrame]
             A dictionary of modes and lipid data
+        group : str
+            Which lipids are being checke.
+            This is used by logging only.
 
         Returns
         -------
@@ -325,6 +353,7 @@ class Pipeline:
             Keys are the tissue group and mode.
             Values are the table of Jaccard distances and p-values.
         """
+        logging.info(f"Calculating Jaccard distance for {group}...")
         jaccard = {
             mode: lipids.groupby(axis="index", level="Category")
             .apply(lambda x: jac.bootstrap(x.iloc[:, 0], x.iloc[:, 1], self.n))
@@ -354,6 +383,7 @@ class Pipeline:
         """
         self.enfc = self._calculate_enfc(order)
 
+        logging.debug("Generating ENFC summary files...")
         enfc = pd.concat(self.enfc, axis="columns")
         enfc.to_csv(self.output / "enfc_summary.csv")
         enfc.groupby(axis="index", level="Category").agg(["mean", "std"]).to_csv(
@@ -361,20 +391,21 @@ class Pipeline:
         )
 
         self.a_lipids = self._get_a_lipids()
-        self.a_jaccard = self._jaccard(self.a_lipids)
+        self.a_jaccard = self._jaccard(self.a_lipids, "A-lipids")
 
         self.u_lipids = self._get_n_lipids(1)
-        self.u_jaccard = self._jaccard(self.u_lipids)
+        self.u_jaccard = self._jaccard(self.u_lipids, "U-lipids")
 
         self.bc_lipids = self._get_b_lipids(picky=False)
-        self.bc_jaccard = self._jaccard(self.bc_lipids)
+        self.bc_jaccard = self._jaccard(self.bc_lipids, "Bc-lipids")
 
         self.bp_lipids = self._get_b_lipids(picky=True)
-        self.bp_jaccard = self._jaccard(self.bp_lipids)
+        self.bp_jaccard = self._jaccard(self.bp_lipids, "Bp-lipids")
 
         self.n2_lipids = self._get_n_lipids(2)
-        self.n2_jaccard = self._jaccard(self.n2_lipids)
+        self.n2_jaccard = self._jaccard(self.n2_lipids, "N2-lipids")
 
+        logging.debug("Generating Switch Analysis (lipid-type) summary files...")
         summary = pd.concat(
             {
                 **self.a_lipids,
@@ -391,6 +422,7 @@ class Pipeline:
             self.output / "lipid_count_summary.csv"
         )
 
+        logging.debug("Generating Jaccard distanse summary files...")
         jaccard = pd.concat(
             {
                 **self.a_jaccard,
