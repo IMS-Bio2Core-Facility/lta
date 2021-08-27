@@ -71,7 +71,7 @@ class Pipeline:
             If there is no data in self.file.
         """
         try:
-            logging.debug(f"Reading data from {self.file}...")
+            logger.debug(f"Reading data from {self.file}...")
             data = dh.construct_df(
                 self.file,
                 index_names=["Lipid", "Category", "m/z"],
@@ -90,21 +90,17 @@ class Pipeline:
                 lambda x: x.loc[:, x.any()]
             )  # Drop all-0 samples
         except FileNotFoundError:
-            logging.exception(
-                f"{self.file} does not exist. A full traceback follows..."
-            )
+            logger.exception(f"{self.file} does not exist. A full traceback follows...")
             raise
         except IsADirectoryError:
-            logging.exception(
-                f"{self.file} is a directory. A full traceback follows..."
-            )
+            logger.exception(f"{self.file} is a directory. A full traceback follows...")
             raise
         except pd.errors.EmptyDataError:
-            logging.exception(
+            logger.exception(
                 f"{self.file} contains no data. A full traceback follows..."
             )
             raise
-        logging.debug("Binarizing data...")
+        logger.debug("Binarizing data...")
         self.binary = {
             group: dh.not_zero(
                 df,
@@ -115,7 +111,7 @@ class Pipeline:
             )
             for group, df in data.groupby(axis="columns", level=self.mode)
         }
-        logging.debug("Filtering data...")
+        logger.debug("Filtering data...")
         self.filtered = {
             group: df.loc[self.binary[group].index, :]
             for group, df in data.groupby(axis="columns", level=self.mode)
@@ -219,7 +215,7 @@ class Pipeline:
         try:
             a_lip = {mode: df.index for mode, df in self.a_lipids.items()}
         except AttributeError:
-            logging.exception("You must find A-lipids before B-lipids.")
+            logger.exception("You must find A-lipids before B-lipids.")
             raise
         else:
             # This assumes that self.binary and a_lip will have the same keys
@@ -353,7 +349,7 @@ class Pipeline:
             Keys are the tissue group and mode.
             Values are the table of Jaccard distances and p-values.
         """
-        logging.info(f"Calculating Jaccard distance for {group}...")
+        logger.info(f"Calculating Jaccard distance for {group}...")
         jaccard = {
             mode: lipids.groupby(axis="index", level="Category")
             .apply(lambda x: jac.bootstrap(x.iloc[:, 0], x.iloc[:, 1], self.n))
@@ -383,7 +379,7 @@ class Pipeline:
         """
         self.enfc = self._calculate_enfc(order)
 
-        logging.debug("Generating ENFC summary files...")
+        logger.debug("Generating ENFC summary files...")
         enfc = pd.concat(self.enfc, axis="columns")
         enfc.to_csv(self.output / "enfc_summary.csv")
         enfc.groupby(axis="index", level="Category").agg(["mean", "std"]).to_csv(
@@ -405,7 +401,7 @@ class Pipeline:
         self.n2_lipids = self._get_n_lipids(2)
         self.n2_jaccard = self._jaccard(self.n2_lipids, "N2-lipids")
 
-        logging.debug("Generating Switch Analysis (lipid-type) summary files...")
+        logger.debug("Generating Switch Analysis (lipid-type) summary files...")
         summary = pd.concat(
             {
                 **self.a_lipids,
@@ -422,7 +418,7 @@ class Pipeline:
             self.output / "lipid_count_summary.csv"
         )
 
-        logging.debug("Generating Jaccard distanse summary files...")
+        logger.debug("Generating Jaccard distanse summary files...")
         jaccard = pd.concat(
             {
                 **self.a_jaccard,
