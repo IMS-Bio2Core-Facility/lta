@@ -7,6 +7,7 @@ This makes the code more atomic -
 and, thus, testable -
 by removing it from the harder to test context of the object.
 """
+import logging
 import sys
 from pathlib import Path
 from typing import Any, List, Optional, Tuple
@@ -18,6 +19,8 @@ if sys.version_info >= (3, 8):
     from typing import Literal
 else:
     from typing_extensions import Literal
+
+logger = logging.getLogger(__name__)
 
 
 def construct_df(
@@ -130,7 +133,7 @@ def enfc(
     ----------
     df : pd.DataFrame
         The lipid data to convert to boolean
-    axis : Literal['rows', 'columns']
+    axis : Literal['index', 'columns']
         Which multiindex to consider
     level : str
         The level of the multiindex containing experimental conditions
@@ -145,8 +148,10 @@ def enfc(
         The processed data.
     """
     if not order:
+        logging.debug("Order not passed. Defaulting to ('experimental', 'control')")
         order = ("experimental", "control")
     mean = df.groupby(axis=axis, level=level).mean()
+    logging.debug(f"Grouping/filtering on {axis}.")
     if axis == "index":
         logfc = np.log10(mean.loc[order[0], :].div(mean.loc[order[1], :]))
     else:

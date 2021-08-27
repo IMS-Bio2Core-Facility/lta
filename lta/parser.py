@@ -68,13 +68,6 @@ lta_parser = configargparse.ArgumentParser(
 )
 
 lta_parser.add_argument(
-    "-V",
-    action="version",
-    version=f"LTA v{__version__}",
-    help="Display version information and exit.",
-)
-
-lta_parser.add_argument(
     "-c",
     "--config",
     required=False,
@@ -140,6 +133,29 @@ lta_parser.add_argument(
     type=str,
     default="Mode",
     help="Metadata label for lipidomics mode",
+)
+
+lta_parser.add_argument(
+    "-V",
+    "--version",
+    action="version",
+    version=f"LTA v{__version__}",
+    help="Display version information and exit.",
+)
+
+lta_parser.add_argument(
+    "-v",
+    "--verbose",
+    action="count",
+    default=0,
+    help="Increase verbosity.",
+)
+
+lta_parser.add_argument(
+    "-l",
+    "--logfile",
+    action="append",
+    help="Location of logfile. May also be 'term' for Std.Out.",
 )
 
 lta_parser.set_defaults(func=run)

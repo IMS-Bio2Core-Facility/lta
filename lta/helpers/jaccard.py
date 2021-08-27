@@ -8,10 +8,13 @@ Citation
 --------
 Chung, N., Miasojedow, B., Startek, M., and Gambin, A. "Jaccard/Tanimoto similarity test and estimation methods for biological presence-absence data" BMC Bioinformatics (2019) 20(Suppl 15): 644. https://doi.org/10.1186/s12859-019-3118-5
 """
+import logging
 from typing import Optional
 
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 def similarity(
@@ -54,18 +57,29 @@ def similarity(
 
     """
     if x.ndim != 1 or y.ndim != 1:
-        raise IndexError(f"All vectors must be 1-d. ndims: {[x.ndim, y.ndim]}.")
-    if x.shape != y.shape:
-        raise IndexError(
-            f"All vectors must have the same length. shape: {[x.shape, y.shape]}"
+        logging.error(
+            f"All vectors must be 1-d. ndims: {[x.ndim, y.ndim]}.", stack_info=True
         )
+        raise IndexError
+    if x.shape != y.shape:
+        logging.error(
+            f"All vectors must have the same length. shape: {[x.shape, y.shape]}",
+            stack_info=True,
+        )
+        raise IndexError
     if x.dtype != bool or y.dtype != bool:
-        raise TypeError(f"All vectors must be boolean. dtypes: {[x.dtype, y.dtype]}")
+        logging.error(
+            f"All vectors must be boolean. dtypes: {[x.dtype, y.dtype]}",
+            stack_info=True,
+        )
+        raise TypeError
 
     if not px:
+        logging.debug("px not provided. Calculating as mean of x.")
         px = x.mean()
         assert isinstance(px, float)
     if not py:
+        logging.debug("py not provided. Calculating as mean of y.")
         py = y.mean()
         assert isinstance(py, float)
 
@@ -73,11 +87,13 @@ def similarity(
     union = x.sum() + y.sum() - intersect
 
     if union == 0:
+        logging.debug("Union is 0. Calculating using px and py.")
         j = (px * py) / (px + py - (px * py))
     else:
         j = intersect / union
 
     if center:
+        logging.debug("Centering J.")
         return j - ((px * py) / (px + py - (px * py)))
     else:
         return j
@@ -118,8 +134,10 @@ def distance(
         The Jaccard distance between the 2 vectors
     """
     if not px:
+        logging.debug("px not provided. Calculating as mean of x.")
         px = x.mean()
     if not py:
+        logging.debug("py not provided. Calculating as mean of y.")
         py = y.mean()
     return 1 - similarity(x, y, center=False, px=px, py=py)
 
@@ -165,16 +183,18 @@ def bootstrap(
         The Jaccard similarity and p_val.
     """
     if not px:
+        logging.debug("px not provided. Calculating as mean of x.")
         px = x.mean()
     if not py:
+        logging.debug("py not provided. Calculating as mean of y.")
         py = y.mean()
 
     j = similarity(x, y, center=False, px=px, py=py)
     if px == 1 or py == 1 or len(x) == x.sum() or len(y) == y.sum():
-        print("Calculation is degenerate as at least one vector is all 1s.")
+        logger.warning("Bootstrap is degenerate as at least one vector is all 1.")
         return pd.Series([j, 1], index=["J-sim", "p-val"])
     if px == 0 or py == 0 or x.sum() == 0 or y.sum() == 0:
-        print("Calculation is degenerate as at least one vector is all 0s.")
+        logger.warning("Bootstrap is degenerate as at least one vector is all 0.")
         return pd.Series([j, 1], index=["J-sim", "p-val"])
 
     j_obs = similarity(x, y, center=True, px=px, py=py)

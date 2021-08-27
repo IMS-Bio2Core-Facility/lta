@@ -5,9 +5,9 @@ from _pytest import capture
 from lta.commands.run import run
 from lta.parser import lta_parser
 
-expected = """usage: lta [-h] [-V] [-c CONFIG] [-t {[0, 1]}] [-b BOOT_REPS]
+expected = """usage: lta [-h] [-c CONFIG] [-t {[0, 1]}] [-b BOOT_REPS]
            [--phenotype PHENOTYPE] [--order ORDER ORDER] [--tissue TISSUE]
-           [--mode MODE]
+           [--mode MODE] [-V] [-v] [-l LOGFILE]
            file output
 """
 
