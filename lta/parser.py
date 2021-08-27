@@ -150,4 +150,12 @@ lta_parser.add_argument(
     default=0,
     help="Increase verbosity.",
 )
+
+lta_parser.add_argument(
+    "-l",
+    "--logfile",
+    action="append",
+    help="Location of logfile. May also be 'term' for Std.Out.",
+)
+
 lta_parser.set_defaults(func=run)

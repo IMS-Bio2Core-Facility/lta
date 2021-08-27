@@ -14,6 +14,12 @@ def main(args: Optional[configargparse.Namespace] = None) -> None:
     """Provide entry point for CLI.
 
     This also configures the logger to use for the run.
+    The ``-v`` flag can be passed multiple times,
+    increasing verbosity from errors to debug.
+    Additionally,
+    file handlers are set up for ``--logfile``,
+    unless the passed file is ``term``,
+    in which case a stream handler is used.
 
     Parameters
     ----------
@@ -24,11 +30,6 @@ def main(args: Optional[configargparse.Namespace] = None) -> None:
     """
     if args is None:
         args = lta_parser.parse_args()
-
-    # Configure logging file directory
-    now = datetime.now().strftime("%Y:%m:%d:%H:%M:%S")
-    logs = Path("logs")
-    logs.mkdir(parents=False, exist_ok=True)
 
     # Get verbosity level
     verbosity = {
@@ -45,10 +46,17 @@ def main(args: Optional[configargparse.Namespace] = None) -> None:
     )
 
     # Configure handlers
+    # Append does not overwrite defaults...
+    if not args.logfile:
+        logs = Path("logs")
+        logs.mkdir(parents=False, exist_ok=True)
+        now = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        args.logfile = [logs / f"{now}.log"]
+
     handlers = [
-        logging.FileHandler(logs / f"{now}.log"),
-        logging.StreamHandler(),
-    ]  # file future arg flag?
+        logging.StreamHandler() if log == "term" else logging.FileHandler(log)
+        for log in args.logfile
+    ]
     for h in handlers:
         h.setLevel(level)
         h.setFormatter(formatter)
