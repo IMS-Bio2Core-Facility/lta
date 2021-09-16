@@ -218,11 +218,11 @@ or pass a different output folder!
 The output folder will contain 5 file.
 For each type of lipid, you should see the following:
 
-1. ``enfc_summary.csv`` - the ENFC results.
-1. ``enfc_summary_grouped.csv`` - the mean and St.Dev. of ENFC, grouped by lipid category.
-1. ``lipid_type_summary.csv`` - a table of lipids, and whether they were classified as the different lipid classes.
-1. ``lipid_count_summary.csv`` - a table counting the frequency of lipid category within lipid classes.
-1. ``jaccard_dist_summary.csv`` - the Jaccard distance and p-value for each lipid category.
+1. ``enfc_individual_lipids.csv`` - the ENFC results for each lipid.
+1. ``enfc_lipid_classes.csv`` - the mean and St.Dev. of ENFC, grouped by lipid class.
+1. ``switch_individual_lipid.csv`` - a table of lipids and their A/B/U/N classification.
+1. ``switch_lipid_classes.csv`` - a table counting the frequency of each lipid class within the A/B/U/N classification.
+1. ``jaccard_similarity.csv`` - the Jaccard similarity and p-value for each lipid class.
 
 A few notes!
 Fold change will **always** be ``order[0] / order[1]``.
