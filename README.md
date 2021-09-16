@@ -230,6 +230,11 @@ The Jaccard distances are calculated between conditions specified in ``--phenoty
 across both tissues and lipid classes.
 The p-values for these distances are calculated using the method outlined by
 [N. Chung, et. al.][jaccard].
+For ENFC,
+fold change is only meaningful if both values are non-0.
+Where this is *not* true,
+NaN has been substituted,
+leaving an empty cell in the output.
 
 ## Contributing
 
