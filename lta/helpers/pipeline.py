@@ -378,9 +378,9 @@ class Pipeline:
 
         logger.debug("Generating ENFC summary files...")
         enfc = pd.concat(self.enfc, axis="columns")
-        enfc.to_csv(self.output / "enfc_summary.csv")
+        enfc.to_csv(self.output / "enfc_individual_lipids.csv")
         enfc.groupby(axis="index", level="Category").agg(["mean", "std"]).to_csv(
-            self.output / "enfc_summary_grouped.csv"
+            self.output / "enfc_lipid_classes.csv"
         )
 
         self.a_lipids = self._get_a_lipids()
@@ -410,9 +410,9 @@ class Pipeline:
             axis="columns",
         ).fillna(False)
         summary.columns.names = ["type_tissue_mode", "Phenotype"]
-        summary.to_csv(self.output / "lipid_type_summary.csv")
+        summary.to_csv(self.output / "switch_individual_lipids.csv")
         summary.groupby(axis="index", level="Category").sum().to_csv(
-            self.output / "lipid_count_summary.csv"
+            self.output / "switch_lipid_classes.csv"
         )
 
         logger.debug("Generating Jaccard distanse summary files...")
@@ -427,4 +427,4 @@ class Pipeline:
             axis="columns",
         )
         jaccard.columns.names = ["type_tissue_mode", "Metrics"]
-        jaccard.to_csv(self.output / "jaccard_dist_summary.csv")
+        jaccard.to_csv(self.output / "jaccard_similarity.csv")
