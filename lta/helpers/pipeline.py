@@ -323,7 +323,7 @@ class Pipeline:
     def _jaccard(
         self, data: Dict[str, pd.DataFrame], group: str
     ) -> Dict[str, pd.DataFrame]:
-        """Calculate jaccard distances and p-values.
+        """Calculate jaccard similarity and p-values.
 
         This takes a dictionary of data.
         As the output of each group of lipids will be structured as such,
@@ -332,8 +332,6 @@ class Pipeline:
         Notes
         -----
         The P-values are calculated using a bootstrap approach on a centered Jaccard similarity.
-        Since Jaccard distance is simply 1 - Jaccard similarity,
-        The P-value for similarity may be taken as the P-value for distance, as well.
 
         Parameters
         ----------
@@ -347,14 +345,13 @@ class Pipeline:
         -------
         Dict[str, pd.DataFrame]
             Keys are the tissue group and mode.
-            Values are the table of Jaccard distances and p-values.
+            Values are the table of Jaccard similarity and p-values.
         """
-        logger.info(f"Calculating Jaccard distance for {group}...")
+        logger.info(f"Calculating Jaccard similarity for {group}...")
         jaccard = {
-            mode: lipids.groupby(axis="index", level="Category")
-            .apply(lambda x: jac.bootstrap(x.iloc[:, 0], x.iloc[:, 1], self.n))
-            .rename(columns={"J-sim": "J_dist"})
-            .assign(J_dist=lambda x: 1 - x.loc[:, "J_dist"])
+            mode: lipids.groupby(axis="index", level="Category").apply(
+                lambda x: jac.bootstrap(x.iloc[:, 0], x.iloc[:, 1], self.n)
+            )
             for mode, lipids in data.items()
         }
         return jaccard
