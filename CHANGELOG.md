@@ -2,6 +2,23 @@
 
 <!--next-version-placeholder-->
 
+## v0.12.0 (2021-09-16)
+### Feature
+* **logging:** Add logfile option ([`2d0bd60`](https://github.com/IMS-Bio2Core-Facility/lta/commit/2d0bd60ce3cf619a39a4b4c6c6821b7576ca470a))
+* **logging:** Introduce logging support ([`431822a`](https://github.com/IMS-Bio2Core-Facility/lta/commit/431822a1136a25483c799a21d841c6ae3fe96a21))
+
+### Fix
+* **pipeline:** Change output file names ([`3b9bdbe`](https://github.com/IMS-Bio2Core-Facility/lta/commit/3b9bdbe9c6a2a2df798f5522ac5e5ab483af1ed6))
+* **pipeline:** Calculate Jaccard similarity ([`4b21ade`](https://github.com/IMS-Bio2Core-Facility/lta/commit/4b21adea2dfc9b4fabe20bff646b2ef1b9bd0cb7))
+* **logging:** Correct use of logger ([`9b332b3`](https://github.com/IMS-Bio2Core-Facility/lta/commit/9b332b3579a32a62a7e1ccc994a5705d9c430d36))
+* **logging:** Respect verbosity flag ([`5373dd2`](https://github.com/IMS-Bio2Core-Facility/lta/commit/5373dd2447e2cad2b749448de4242632c2ba824f))
+* **logging:** Add logging for data_handling ([`73a2aa3`](https://github.com/IMS-Bio2Core-Facility/lta/commit/73a2aa3329b30998c4c16ac9b738b31e87d21085))
+* **logging:** Add logging for Jaccard ([`a35e851`](https://github.com/IMS-Bio2Core-Facility/lta/commit/a35e8519f036a0911ce789467494cef7f7ee8a45))
+* **logging:** Add logging to pipeline ([`3af0c53`](https://github.com/IMS-Bio2Core-Facility/lta/commit/3af0c5368877689a655ce2919c2b42ad01496c6f))
+
+### Documentation
+* **README:** Update file name output ([`3e2c1df`](https://github.com/IMS-Bio2Core-Facility/lta/commit/3e2c1df3af86fd9d00a10721d263e05fce05a68e))
+
 ## v0.11.1 (2021-08-26)
 ### Fix
 * **data_handling:** Respect axis in enfc ([`2d727f7`](https://github.com/IMS-Bio2Core-Facility/lta/commit/2d727f716c06e972e4228f2932f572d5ed16b015))
