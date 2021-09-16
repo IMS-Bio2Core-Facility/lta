@@ -129,6 +129,11 @@ def enfc(
     respectively,
     though alternatives can be passed to the ``order`` argument.
 
+    Additionally,
+    the notion of fold change requires both samples to be non-0.
+    When either x/0, 0/x, or 0/0 occurs during the FC calculation,
+    these values are returned as NaN.
+
     Parameters
     ----------
     df : pd.DataFrame
@@ -152,10 +157,21 @@ def enfc(
         order = ("experimental", "control")
     mean = df.groupby(axis=axis, level=level).mean()
     logging.debug(f"Grouping/filtering on {axis}.")
+    # Replace inf (x/0) with NaN
+    # Replace 0 (0/x) with NaN
+    # 0/0 is already NaN
     if axis == "index":
-        logfc = np.log10(mean.loc[order[0], :].div(mean.loc[order[1], :]))
+        logfc = np.log10(
+            mean.loc[order[0], :]
+            .div(mean.loc[order[1], :])
+            .replace([np.inf, -np.inf, 0], np.NAN)
+        )
     else:
-        logfc = np.log10(mean.loc[:, order[0]].div(mean.loc[:, order[1]]))
+        logfc = np.log10(
+            mean.loc[:, order[0]]
+            .div(mean.loc[:, order[1]])
+            .replace([np.inf, -np.inf, 0], np.NAN)
+        )
     error = (
         df.groupby(axis=axis, level=level).std().pow(2).sum(axis=axis).div(2).pow(0.5)
     )
