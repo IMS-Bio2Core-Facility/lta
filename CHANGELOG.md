@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.12.1 (2021-09-16)
+### Fix
+* **data_handling:** Report senseless FC as 0 ([`1e0ae79`](https://github.com/IMS-Bio2Core-Facility/lta/commit/1e0ae79ef81452441f1b7bfb1c3f606364694d99))
+
+### Documentation
+* **README:** Document NaN's in output ([`4ebc261`](https://github.com/IMS-Bio2Core-Facility/lta/commit/4ebc2613cea1e47f2d16568d6a427f433a8f7c1c))
+
 ## v0.12.0 (2021-09-16)
 ### Feature
 * **logging:** Add logfile option ([`2d0bd60`](https://github.com/IMS-Bio2Core-Facility/lta/commit/2d0bd60ce3cf619a39a4b4c6c6821b7576ca470a))
