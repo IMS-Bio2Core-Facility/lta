@@ -251,6 +251,12 @@ we request that you follow our [code of conduct](./coc.md)
 to help maintain a welcoming,
 respectful environment.
 
+## Future Developments
+
+- [ ] Improve Github actions to use caching for poetry and Nox
+- [ ] Increase test coverage
+- [ ] Automate plotting
+
 ## Citations
 
 If you use LTA in your work,
