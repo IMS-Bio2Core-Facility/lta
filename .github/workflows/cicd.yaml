@@ -9,12 +9,21 @@ on:
 
   workflow_dispatch:
 
+# We cache the lint and security job, as there is no poetry install
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Cache Nox
+        uses: actions/cache@v2
+        env:
+          CACHE_NUMBER: 0
+        with:
+          path: .nox
+          key:
+            nox-${{ env.CACHE_NUMBER }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('pyproject.toml') }}
       - name: Setup Nox
         uses: excitedleigh/setup-nox@v2.0.0
       - name: Install Poetry
@@ -23,6 +32,28 @@ jobs:
           version: 1.1.7
       - name: Format and Lint
         run: nox -s form lint type
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Cache Nox
+        uses: actions/cache@v2
+        env:
+          CACHE_NUMBER: 0
+        with:
+          path: .nox
+          key:
+            nox-${{ env.CACHE_NUMBER }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('pyproject.toml') }}
+      - name: Setup Nox
+        uses: excitedleigh/setup-nox@v2.0.0
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.1.7
+        with:
+          version: 1.1.7
+      - name: Check for Dependency Vulnerabilities
+        run: nox -s security
 
   test:
     runs-on: ${{ matrix.os }}
@@ -50,20 +81,6 @@ jobs:
           env_vars: OS
           fail_ci_if_error: true
           verbose: true
-
-  security:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Nox
-        uses: excitedleigh/setup-nox@v2.0.0
-      - name: Install Poetry
-        uses: snok/install-poetry@v1.1.7
-        with:
-          version: 1.1.7
-      - name: Check for Dependency Vulnerabilities
-        run: nox -s security
 
   release:
     runs-on: ubuntu-latest

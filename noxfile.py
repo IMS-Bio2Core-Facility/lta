@@ -19,7 +19,7 @@ VERSIONS: List[str] = [
 ]
 
 nox.options.stop_on_first_error = False
-nox.options.reuse_existing_virtualenvs = False
+nox.options.reuse_existing_virtualenvs = True
 
 
 def constrained_install(session: Session, *args: str, **kwargs: Any) -> None:
@@ -94,7 +94,7 @@ def security(session: Session) -> None:
     os.remove("requirements.txt")
 
 
-@nox.session(python=VERSIONS)
+@nox.session(python=VERSIONS, reuse_venv=False)
 def tests(session: Session) -> None:
     """Run the test suite with pytest."""
     args = session.posargs or []
@@ -113,7 +113,7 @@ def tests(session: Session) -> None:
     session.run("pytest", *args)
 
 
-@nox.session(python="3.9")
+@nox.session(python="3.9", reuse_venv=False)
 def doc_build(session: Session) -> None:
     """Build the documentation."""
     session.run("poetry", "install", "--no-dev", external=True)
