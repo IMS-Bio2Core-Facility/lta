@@ -88,6 +88,8 @@ jobs:
     needs: [lint, test, security]
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPOSITORY_USERNAME: __token__
+      REPOSITORY_PASSWORD: ${{ secrets.PYPI_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -99,7 +101,7 @@ jobs:
           python-version: 3.9
       - name: Get Dependencies
         run: |
-          pip install poetry python-semantic-release
+          pip install poetry==1.1.7 python-semantic-release==7.23.0
       - name: Configure git
         run: |
           git config --global user.name 'rbpatt2019'
