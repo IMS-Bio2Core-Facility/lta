@@ -16,6 +16,7 @@ VERSIONS: List[str] = [
     "3.7",
     "3.8",
     "3.9",
+    "3.10",
 ]
 
 nox.options.stop_on_first_error = False
@@ -37,7 +38,7 @@ def constrained_install(session: Session, *args: str, **kwargs: Any) -> None:
     os.remove("requirements.txt")
 
 
-@nox.session(python="3.9")
+@nox.session(python="3.10")
 def form(session: Session) -> None:
     """Format code with isort and black."""
     args = session.posargs or LOCATIONS
@@ -77,7 +78,7 @@ def type(session: Session) -> None:
     session.run("mypy", "--ignore-missing-imports", *args)
 
 
-@nox.session(python="3.9")
+@nox.session(python="3.10")
 def security(session: Session) -> None:
     """Check security safety."""
     session.run(
@@ -113,7 +114,7 @@ def tests(session: Session) -> None:
     session.run("pytest", *args)
 
 
-@nox.session(python="3.9", reuse_venv=False)
+@nox.session(python="3.10", reuse_venv=False)
 def doc_build(session: Session) -> None:
     """Build the documentation."""
     session.run("poetry", "install", "--no-dev", external=True)
