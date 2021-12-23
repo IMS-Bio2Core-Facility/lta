@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "LTA"
+name = "LipidTA"
 version = "0.12.1"
 description = "Lipid Trafficking Analysis"
 license = "MIT"

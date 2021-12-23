@@ -7,6 +7,8 @@
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Codestyle: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+**aka LTA, aka LipidTA**
+
 A python commandline interface for analysing lipidomics data.
 
 The source code lives on [github][github].
@@ -57,14 +59,21 @@ python3 -m venv .venv
 # Activate the environment
 source .venv/bin/activate
 # Install lta
-pip install -U lta
+pip install -U LipidTA
+```
+
+```{note}
+Our pip package is `LipidTA`.
+Unfortunately,
+`lta` was "too similar to existing package names",
+so PyPi wouldn't let us use it.
 ```
 
 If you want to install a specific version,
 then change the last line in the previous code block to:
 
 ```shell
-pip install lta==0.10.0
+pip install LipidTA==0.12.1
 ```
 
 replacing the version number with the version number you want.
@@ -153,7 +162,7 @@ though I find little improvement beyond 20,000 reps.
 
 A critical step of the analysis is binarizing the lipid expression.
 A lipid is classed as 0 in a tissue/condition if
-the lipid is **not** detected in more than a particular fraction of cells.
+the lipid is **not** detected in more than a particular fraction of samples.
 The default values is 0.2 (one-fifth of the samples).
 If you want to change it,
 pass the ``-t/--threshold`` flag with a decimal between 0 and 1.
@@ -181,7 +190,7 @@ while the second word will be treated as the control group.
 In this example then,
 fold-change would be give as ``obese / lean``.
 If you don't specify,
-this defaults to ``experimental control``.
+this defaults to ``experimental / control``.
 
 If you find yourself regularly passing arguments via the CLI,
 you might want to try a configuration file!
