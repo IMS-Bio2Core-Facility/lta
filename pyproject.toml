@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "LipidTA"
-version = "0.12.2"
+version = "0.12.3"
 packages=[{include = "lta"}]
 description = "Lipid Trafficking Analysis"
 license = "MIT"

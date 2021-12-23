@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v0.12.3 (2021-12-23)
+### Fix
+* **pyproject.toml:** Correct version number ([`0b01aea`](https://github.com/IMS-Bio2Core-Facility/lta/commit/0b01aea41f8cab8a61f4d2d1b85cd864f04bb656))
+* **pyproject.toml:** Correct included packages ([`d603a6c`](https://github.com/IMS-Bio2Core-Facility/lta/commit/d603a6c904c494b480e2b5daa14b1fc267ab1cec))
+
 ## v0.12.2 (2021-12-23)
 ### Fix
 * **repo:** Support python3.10 ([`0edba28`](https://github.com/IMS-Bio2Core-Facility/lta/commit/0edba28f5bf7291379aa4f59b9faee279f5ae39b))
