@@ -103,6 +103,14 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+      - name: Cache Pip
+        uses: actions/cache@v2
+        env:
+          CACHE_NUMBER: 0
+        with:
+          path: ~/.pip
+          key:
+            pip-${{ env.CACHE_NUMBER }}-PT${{ env.POETRY_VERSION }}-PRS${{ env.PSR_VERSION }}
       - name: Get Dependencies
         run: |
           pip install poetry==$POETRY_VERSION python-semantic-release==$PSR_VERSION
