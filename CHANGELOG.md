@@ -2,6 +2,17 @@
 
 <!--next-version-placeholder-->
 
+## v0.12.2 (2021-12-23)
+### Fix
+* **repo:** Support python3.10 ([`0edba28`](https://github.com/IMS-Bio2Core-Facility/lta/commit/0edba28f5bf7291379aa4f59b9faee279f5ae39b))
+
+### Documentation
+* **docs/index.md:** Correct badges ([`1f3685e`](https://github.com/IMS-Bio2Core-Facility/lta/commit/1f3685ea9056496c09f62a62b99d177a337d20c2))
+* **README:** Add links ([`f26fe30`](https://github.com/IMS-Bio2Core-Facility/lta/commit/f26fe3005b35541c6cf36b5ca880b98239f7f688))
+* **readthedocs:** Specify build dependencies ([`61837c3`](https://github.com/IMS-Bio2Core-Facility/lta/commit/61837c33f902d89c2b0d7d35ef23a5635e67d743))
+* **README:** Update project name and status ([`85e235c`](https://github.com/IMS-Bio2Core-Facility/lta/commit/85e235cbf8f70accf2041cf9d6ecc1c675cd4414))
+* **README:** Add future work ([`1304204`](https://github.com/IMS-Bio2Core-Facility/lta/commit/1304204d6de27b7c2fe05fd34d27fc53ccb71751))
+
 ## v0.12.1 (2021-09-16)
 ### Fix
 * **data_handling:** Report senseless FC as 0 ([`1e0ae79`](https://github.com/IMS-Bio2Core-Facility/lta/commit/1e0ae79ef81452441f1b7bfb1c3f606364694d99))
