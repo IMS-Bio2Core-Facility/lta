@@ -9,6 +9,10 @@ on:
 
   workflow_dispatch:
 
+env:
+  POETRY_VERSION: 1.1.12
+  PSR_VERSION: 7.23.0
+
 # We cache the lint and security job, as there is no poetry install
 jobs:
   lint:
@@ -29,7 +33,7 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1.3.0
         with:
-          version: 1.1.12
+          version: ${{ env.POETRY_VERSION }}
       - name: Format and Lint
         run: nox -s form lint type
 
@@ -51,7 +55,7 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1.3.0
         with:
-          version: 1.1.12
+          version: ${{ env.POETRY_VERSION }}
       - name: Check for Dependency Vulnerabilities
         run: nox -s security
 
@@ -70,7 +74,7 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1.3.0
         with:
-          version: 1.1.12
+          version: ${{ env.POETRY_VERSION }}
       - name: Test Code and Docs
         run: nox -s tests
       - name: Upload to codecov
@@ -101,7 +105,7 @@ jobs:
           python-version: 3.9
       - name: Get Dependencies
         run: |
-          pip install poetry==1.1.12 python-semantic-release==7.23.0
+          pip install poetry==$POETRY_VERSION python-semantic-release==$PSR_VERSION
       - name: Configure git
         run: |
           git config --global user.name 'rbpatt2019'
