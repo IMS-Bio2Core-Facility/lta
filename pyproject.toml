@@ -2,7 +2,7 @@
 name = "LipidTA"
 version = "0.12.3"
 packages=[{include = "lta"}]
-description = "Lipid Trafficking Analysis"
+description = "Lipid Traffic Analysis"
 license = "MIT"
 authors = ["rbpatt2019 <rb.patterson.cross@gmail.com>"]
 readme = "README.md"

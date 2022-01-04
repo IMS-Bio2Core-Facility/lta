@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Pipeline:
-    """The Lipid Trafficking Analysis pipeline.
+    """The Lipid Traffic Analysis pipeline.
 
     Attributes
     ----------

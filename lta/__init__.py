@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""LTA: A Python CLI for Lipid Trafficking Analysis.
+"""LTA: A Python CLI for Lipid Traffic Analysis.
 
 Attributes
 ----------
