@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.12.5 (2022-01-04)
+### Fix
+* **lta.py:** Remove colons from filenames ([`3e4388c`](https://github.com/IMS-Bio2Core-Facility/lta/commit/3e4388cfcc5c906ac384195c17588dd6edd0a53f))
+
 ## v0.12.4 (2022-01-04)
 ### Fix
 * **pipeline.py:** Respect metadata locations ([`e906e87`](https://github.com/IMS-Bio2Core-Facility/lta/commit/e906e87816305e071fc47fe6189b817095b08959))
