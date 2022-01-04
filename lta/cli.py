@@ -3,7 +3,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 
 import configargparse
 
@@ -47,14 +47,18 @@ def main(args: Optional[configargparse.Namespace] = None) -> None:
 
     # Configure handlers
     # Append does not overwrite defaults...
+    # Dashes are used instead of my usual colons for time,
+    # As they are Windows incompatible.
     if not args.logfile:
         logs = Path("logs")
         logs.mkdir(parents=False, exist_ok=True)
-        now = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         args.logfile = [logs / f"{now}.log"]
 
     handlers = [
-        logging.StreamHandler() if log == "term" else logging.FileHandler(log)
+        cast(logging.Handler, logging.StreamHandler())
+        if log == "term"
+        else cast(logging.Handler, logging.FileHandler(log))
         for log in args.logfile
     ]
     for h in handlers:
