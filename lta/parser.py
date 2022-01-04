@@ -58,7 +58,7 @@ from lta.helpers.custom_types import FloatRange
 
 lta_parser = configargparse.ArgumentParser(
     prog="lta",
-    description="Lipid Trafficking Analysis",
+    description="Lipid Traffic Analysis",
     allow_abbrev=False,
     add_config_file_help=True,
     default_config_files=["lta_conf.txt"],
