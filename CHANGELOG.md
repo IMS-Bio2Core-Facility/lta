@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v0.12.4 (2022-01-04)
+### Fix
+* **pipeline.py:** Respect metadata locations ([`e906e87`](https://github.com/IMS-Bio2Core-Facility/lta/commit/e906e87816305e071fc47fe6189b817095b08959))
+
+### Documentation
+* **repo:** Use Traffic throughout ([`af3c4d1`](https://github.com/IMS-Bio2Core-Facility/lta/commit/af3c4d1554215251b8a4432db3b8a1aba4d1a1e7))
+* **README.md:** Update badges ([`57718d4`](https://github.com/IMS-Bio2Core-Facility/lta/commit/57718d41d7a1b49e70ec9fb58c0f32b76b8ea9e2))
+
 ## v0.12.3 (2021-12-23)
 ### Fix
 * **pyproject.toml:** Correct version number ([`0b01aea`](https://github.com/IMS-Bio2Core-Facility/lta/commit/0b01aea41f8cab8a61f4d2d1b85cd864f04bb656))
