@@ -24,12 +24,17 @@ class Pipeline:
         The path to the combined data input file.
     output : Path
         Where to save the results.
+    n_rows_metadata : int
+        The number of rows to treat as column metadata.
+        As Python is 0-indexed, passing ``11`` will read in rows ``0-10``.
     level : str
-        Metadata location of experimental conditions
+        Metadata location of experimental conditions.
     tissue : str
-        Metadata location of sample tissue compartment
+        Metadata location of sample tissue compartment.
     mode : str
-        Metadata location of lipidomics mode
+        Metadata location of lipidomics mode.
+    sample_id : str
+        Metadata location of sample IDs.
     thresh : float
         The fraction of samples that are 0 above which a lipid will be called 0 for a tissue.
     n : int
@@ -38,9 +43,11 @@ class Pipeline:
 
     file: Path
     output: Path
+    n_rows_metadata: int
     level: str
     tissue: str
     mode: str
+    sample_id: str
     thresh: float
     n: int
 
@@ -74,18 +81,11 @@ class Pipeline:
             logger.debug(f"Reading data from {self.file}...")
             data = dh.construct_df(
                 self.file,
+                self.n_rows_metadata,
+                [self.mode, self.level, self.tissue, self.sample_id],
                 index_names=["Lipid", "Category", "m/z"],
-                column_names=[
-                    self.mode,
-                    "Sample",
-                    self.level,
-                    "Generation",
-                    self.tissue,
-                    "Handling",
-                ],
                 index_col=[0, 1, 2],
-                header=list(range(2, 8)),
-                skiprows=[8, 9, 10, 11],
+                header=None,
             ).pipe(
                 lambda x: x.loc[:, x.any()]
             )  # Drop all-0 samples

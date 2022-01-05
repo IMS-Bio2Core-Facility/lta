@@ -24,24 +24,34 @@ logger = logging.getLogger(__name__)
 
 
 def construct_df(
-    file: Path, index_names: List[str], column_names: List[str], **kwargs: Any
+    file: Path,
+    n_rows: int,
+    metadata: List[str],
+    index_names: Optional[List[str]] = None,
+    **kwargs: Any,
 ) -> pd.DataFrame:
     """Construct a dataframe from the given path.
 
-    A light wrapper to handing basic reading and renaming of data.
-    I find this function necessary as the parameters required to read metadata
-    properly always seem to drop the necessary level names.
-    Additionally, it also drops rows and columns that are completely NaN,
-    as they are almost certainly uniformative.
+    A light wrapper to handing the reading of complex metadata.
+    It reads the whole dataframe,
+    then sices of ``n_rows`` to treat as metadata.
+    Any undesired rows are dropped,
+    then metadata is added as a multiindex onto the raw data,
+    less those rows that were metadata.
+
+    Any row metadata can be retained by specifying the
+    ``index_col`` kwarg to ``pd.read_csv``.
 
     Parameters
     ----------
     file : Path
         The path to the data file
-    index_names : List[str]
-        The names of the index metadata columns
-    column_names : List[str]
-        The names of the column metadata rows
+    n_rows : int
+        The number of rows in the column metadata
+    metadata : List[str]
+        The metadata rows to include
+    index_names : Optional[List[str]]
+        Names for the data frame multi-index
     **kwargs : Any
         Further argument passed to ``pd.read_csv``
 
@@ -50,14 +60,23 @@ def construct_df(
     pd.DataFrame
         The created dataframe
     """
-    counts: pd.DataFrame = (
-        pd.read_csv(file, **kwargs)
-        .dropna(axis="rows", how="all")
-        .dropna(axis="columns", how="all")
-    )
-    counts.index.names = index_names
-    counts.columns.names = column_names
-    return counts
+    counts: pd.DataFrame = pd.read_csv(file, **kwargs)
+
+    # Retrieve column metadata
+    cols = counts.iloc[:n_rows, :].copy()
+    cols.index = cols.index.droplevel([0, 1])
+    cols = cols.loc[metadata, :]
+
+    # Create final dataframe
+    data = counts.iloc[n_rows:, :].copy()
+    data.columns = pd.MultiIndex.from_frame(cols.transpose())
+    if index_names:
+        data.index.names = index_names
+
+    # Force numeric types
+    data = data.apply(pd.to_numeric)
+
+    return data
 
 
 def not_zero(

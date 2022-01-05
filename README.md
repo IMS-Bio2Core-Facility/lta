@@ -100,40 +100,52 @@ please see our guide on [contributing](./contributing.md).
 
 ### The Data
 
-This should be a single CSV files where the first 11 rows contain sample metadata
-and the first 3 columns contain the lipid metadata.
-Within the sample metadata,
-rows 4-9 should contain the:
+The input should be a csv containint the lipidomics results.
+We make only two assumptions about the input data.
+Firstly,
+that the first 3 columns are the multiindex for the lipids,
+and include the lipid name,
+category,
+and m/z, respectively.
+Secondly,
+that the values are numeric.
+
+The analysis depends on a number of key metadata variables,
+namely:
 
 - Mode (*ie.* -ve vs +ve)
 - Sample ID
 - Phenotype (*ie.* lean vs obese)
-- Generation (*ie.* F1 vs F2)
 - Tissue (*ie.* heart)
-- Handling (any notes about sample prep)
 
-respectively.
-You can name these metadata rows whatever you want,
+These rows should be in the first ``n`` rows of your data file,
+where n is specified with the option ``--n-rows-metadata``.
+You can name these metadata rows whatever you want in the data file,
 and tell ``lta`` where to find them with the appropriate flags.
 Please see the section on [customising your run](customising).
+However,
+if these data are not present,
+the tool will not run,
+as the analysis only makes sense in the context of these variables.
+
 In order to read the data,
 some assumptions about the format must be made.
 Should we make any changes to data format expectations,
 it will be well documented and will only occur in a major/breaking releas.
 
-```{note}
-We hope to generalise file reading in future releases to improve usability
-in a future release.
-```
-
 ### Running the analysis
 
 Once you've installed the tool and activated your virtual environment,
-running the analysis is as simple as:
+running the analysis can be as simple as:
 
 ```shell
 lta data.csv results
 ```
+
+While it can be that simple,
+you'll likely have to customise some options for your run.
+Please see the section on [customising your run](customising)
+for further details.
 
 The first argument is path to the combined input file.
 If the file doesn't exist,
@@ -175,9 +187,10 @@ so explore how it impacts your data!
 Many calculations are dependent on knowing where certain metadata is stored.
 Namely, the experimental conditions (specified with ``--phenotype``)
 the tissue of origin (specified with ``--tissue``),
+the sample ID (specified with ``--sample-id``),
 and the lipidomics mode (specified with ``--mode``).
 If these are not passed,
-then they default to "Phenotype", "Tissue", and "Mode" respectively.
+then they default to "Phenotype", "Tissue", "SampleID", and "Mode" respectively.
 Please the section on [expected data file structure](data) for more information.
 
 For the fold-change calculation in ENFC to make any sense,
@@ -239,9 +252,9 @@ For each type of lipid, you should see the following:
 
 A few notes!
 Fold change will **always** be ``order[0] / order[1]``.
-The Jaccard distances are calculated between conditions specified in ``--phenotype``
+The Jaccard similarities are calculated between conditions specified in ``--phenotype``
 across both tissues and lipid classes.
-The p-values for these distances are calculated using the method outlined by
+The p-values for these similarities are calculated using the method outlined by
 [N. Chung, et. al.][jaccard].
 For ENFC,
 fold change is only meaningful if both values are non-0.
