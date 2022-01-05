@@ -16,7 +16,7 @@ def run(args: configargparse.Namespace) -> None:
     the ``configargparser.Namespace``,
     and then calls the ``run`` method.
     Nothing more, nothing less.
-    The rest of the magis is handled by the pipeline.
+    The rest of the magic is handled by the pipeline.
 
     Parameters
     ----------
@@ -27,9 +27,11 @@ def run(args: configargparse.Namespace) -> None:
     pl = Pipeline(
         args.file,
         args.output,
+        args.n_rows_metadata,
         args.phenotype,
         args.tissue,
         args.mode,
+        args.sample_id,
         args.threshold,
         args.boot_reps,
     )
