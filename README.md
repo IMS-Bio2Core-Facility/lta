@@ -100,23 +100,32 @@ please see our guide on [contributing](./contributing.md).
 
 ### The Data
 
-The input should be a csv containint the lipidomics results.
-We make only two assumptions about the input data.
+The input should be a csv containing the lipidomics results.
+Though we strive to be as flexible as possible,
+we must make some assumptions about the data to be able to use it.
 Firstly,
-that the first 3 columns are the multiindex for the lipids,
+the first 3 columns must be the multiindex for the lipids,
 and include the lipid name,
 category,
 and m/z, respectively.
 Secondly,
-that the values are numeric.
+the values must be numeric.
 
 The analysis depends on a number of key metadata variables,
 namely:
 
-- Mode (*ie.* -ve vs +ve)
+- Mode (_ie._ -ve vs +ve)
 - Sample ID
-- Phenotype (*ie.* lean vs obese)
-- Tissue (*ie.* heart)
+- Phenotype (_ie._ lean vs obese)
+- Tissue (_ie._ heart)
+
+Additionally,
+"phenotype" should be binary -
+that is,
+there should only be two categories -
+and the order for fold change calculation must be specified with
+``--order Cond1 Cond2``.
+Fold Change will always be calculated as ``Cond1 / Cond2``.
 
 These rows should be in the first ``n`` rows of your data file,
 where n is specified with the option ``--n-rows-metadata``.
@@ -128,24 +137,19 @@ if these data are not present,
 the tool will not run,
 as the analysis only makes sense in the context of these variables.
 
-In order to read the data,
-some assumptions about the format must be made.
+```{important}
 Should we make any changes to data format expectations,
 it will be well documented and will only occur in a major/breaking releas.
+```
 
 ### Running the analysis
 
 Once you've installed the tool and activated your virtual environment,
-running the analysis can be as simple as:
+running the analysis **can** be as simple as:
 
 ```shell
 lta data.csv results
 ```
-
-While it can be that simple,
-you'll likely have to customise some options for your run.
-Please see the section on [customising your run](customising)
-for further details.
 
 The first argument is path to the combined input file.
 If the file doesn't exist,
@@ -155,12 +159,34 @@ the command will error with an apropriate message.
 The secont argument identifies a folder in which the results will be saved.
 It will be create if it doesn't exist.
 
-If you ever have any questions about the tool,
-you can access a condensed help menu by running:
+While it can be that simple,
+you'll likely have to customise some options for your run.
+In that case,
+it will likely look a bit more like:
+
+```shell
+lta --n-rows-metadata 11\
+--phenotype Group \
+--order obse lean \
+--tissue Compartment \
+--sample-id mouse
+```
+
+Don't worry if it looks intimidating!
+You can check out the section on [customising your run](customising)
+for further details,
+and help can always be found at our [documentation][readthedocs]
+or from the command line with:
 
 ```shell
 lta -h
 ```
+
+Alternatively,
+you might prefer to use a configuration file to keep things simple.
+In that case,
+see the section on [configuration](configuration)
+for more information.
 
 (customising)=
 
@@ -191,6 +217,9 @@ the sample ID (specified with ``--sample-id``),
 and the lipidomics mode (specified with ``--mode``).
 If these are not passed,
 then they default to "Phenotype", "Tissue", "SampleID", and "Mode" respectively.
+To find these rows,
+we also need to know the number of lines in your column metadata.
+This is specified with ``--n-rows-metadata``.
 Please the section on [expected data file structure](data) for more information.
 
 For the fold-change calculation in ENFC to make any sense,
@@ -207,6 +236,10 @@ In this example then,
 fold-change would be give as ``obese / lean``.
 If you don't specify,
 this defaults to ``experimental / control``.
+
+(configuration)=
+
+#### Configuration files
 
 If you find yourself regularly passing arguments via the CLI,
 you might want to try a configuration file!
