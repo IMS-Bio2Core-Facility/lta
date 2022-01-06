@@ -22,7 +22,9 @@ from lta.helpers import pipeline
 def test_raise_NotFound(caplog: capture.CaptureFixture) -> None:
     """It handles FileNotFoundErrors."""
     with pytest.raises(FileNotFoundError):
-        pipeline.Pipeline(Path("foo.csv"), Path("bar"), "spam", "eggs", "green", 0.2, 1)
+        pipeline.Pipeline(
+            Path("foo.csv"), Path("bar"), 5, "spam", "eggs", "ham", "green", 0.2, 1
+        )
     assert caplog.record_tuples == [
         (
             "lta.helpers.pipeline",
@@ -39,7 +41,9 @@ def test_raise_NotDir(mocker: MockerFixture, caplog: capture.CaptureFixture) -> 
         "lta.helpers.data_handling.construct_df", side_effect=IsADirectoryError
     )
     with pytest.raises(IsADirectoryError):
-        pipeline.Pipeline(Path("foo"), Path("bar"), "spam", "eggs", "green", 0.2, 1)
+        pipeline.Pipeline(
+            Path("foo"), Path("bar"), 5, "spam", "eggs", "ham", "green", 0.2, 1
+        )
     assert caplog.record_tuples == [
         (
             "lta.helpers.pipeline",
@@ -56,7 +60,9 @@ def test_raise_Runtime(mocker: MockerFixture, caplog: capture.CaptureFixture) ->
         "lta.helpers.data_handling.construct_df", side_effect=pd.errors.EmptyDataError
     )
     with pytest.raises(pd.errors.EmptyDataError):
-        pipeline.Pipeline(Path("foo.csv"), Path("bar"), "spam", "eggs", "green", 0.2, 1)
+        pipeline.Pipeline(
+            Path("foo.csv"), Path("bar"), 5, "spam", "eggs", "ham", "green", 0.2, 1
+        )
     assert caplog.record_tuples == [
         (
             "lta.helpers.pipeline",
