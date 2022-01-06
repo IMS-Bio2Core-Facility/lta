@@ -2,8 +2,8 @@
 """Unit tests for the data_handling module."""
 import sys
 from pathlib import Path
+from typing import List, Optional
 
-import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
@@ -17,21 +17,37 @@ else:
     from typing_extensions import Literal
 
 
-def test_construct_df(mocker: MockerFixture) -> None:
+@pytest.mark.parametrize("index_names", [None, ["one", "two", "three"]])
+def test_construct_df(mocker: MockerFixture, index_names: Optional[List[str]]) -> None:
     """It drops NaNs."""
+    idx = pd.MultiIndex.from_arrays(
+        [
+            [None, None, "a", "a", "b", "b"],
+            [None, None, "e", "e", "f", "f"],
+            ["one", "two", "c", "c", "d", "d"],
+        ]
+    )
     df = pd.DataFrame(
-        {"a": [np.nan, 1, 2], "b": [np.nan, 1, 2], "c": [np.nan, np.nan, np.nan]},
-        index=[0, 1, 2],
+        {0: ["e", "f", "1", "2", "3", "4"], 1: ["g", "h", 5, 6, 7, 8]}, index=idx
     )
 
-    exp = pd.DataFrame({"a": [1, 2], "b": [1, 2]}, index=[1, 2], dtype=np.float64)
-    exp.index.names = ["x"]
-    exp.columns.names = ["y"]
+    exp_idx = pd.MultiIndex.from_arrays(
+        [["a", "a", "b", "b"], ["e", "e", "f", "f"], ["c", "c", "d", "d"]],
+        names=index_names,
+    )
+    exp_col = pd.MultiIndex.from_arrays([["f", "h"]], names=["two"])
+    exp = pd.DataFrame(
+        [[1, 5], [2, 6], [3, 7], [4, 8]],
+        index=exp_idx,
+        columns=exp_col,
+    )
 
     # Any attempts to mock pandas in lta.helpers.data_handling
     # Results in a slew of import errors
     mocker.patch("pandas.read_csv", return_value=df)
-    results = dh.construct_df(Path("foo"), index_names=["x"], column_names=["y"])
+    results = dh.construct_df(
+        Path("foo"), n_rows=2, metadata=["two"], index_names=index_names
+    )
     assert_frame_equal(results, exp)
 
 
