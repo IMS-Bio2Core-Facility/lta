@@ -2,6 +2,18 @@
 
 <!--next-version-placeholder-->
 
+## v1.0.0 (2022-01-07)
+### Feature
+* **cli:** Change phenotype to group ([`6b91841`](https://github.com/IMS-Bio2Core-Facility/lta/commit/6b918419e88136e2a47edccb65a0ff31cbace70e))
+* **cli:** Generalise data reading ([`d5ce9f5`](https://github.com/IMS-Bio2Core-Facility/lta/commit/d5ce9f594ff3380ab4cc6cd77fd3f64113530173))
+
+### Breaking
+* Change "phenotype" to "group". Existing users will need to make sure that any scripts and config files use this new flag.  ([`6b91841`](https://github.com/IMS-Bio2Core-Facility/lta/commit/6b918419e88136e2a47edccb65a0ff31cbace70e))
+* This introduces 2 new command line flags and changes how the data is processed. Past scripts are not guaranteed to run correctly - unless, by chance, they used the defaults - so a breaking release is required.  ([`d5ce9f5`](https://github.com/IMS-Bio2Core-Facility/lta/commit/d5ce9f594ff3380ab4cc6cd77fd3f64113530173))
+
+### Documentation
+* **README.md:** Update usage for new flags ([`75772f7`](https://github.com/IMS-Bio2Core-Facility/lta/commit/75772f7b81f6bf518b9e5cc55656b5a0740f5dda))
+
 ## v0.12.5 (2022-01-04)
 ### Fix
 * **lta.py:** Remove colons from filenames ([`3e4388c`](https://github.com/IMS-Bio2Core-Facility/lta/commit/3e4388cfcc5c906ac384195c17588dd6edd0a53f))
