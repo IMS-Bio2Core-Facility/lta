@@ -28,7 +28,7 @@ def run(args: configargparse.Namespace) -> None:
         args.file,
         args.output,
         args.n_rows_metadata,
-        args.phenotype,
+        args.group,
         args.tissue,
         args.mode,
         args.sample_id,

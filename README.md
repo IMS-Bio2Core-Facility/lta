@@ -26,10 +26,10 @@ Lipid Traffic Analysis (LTA) is a tool for using lipidomics data to test hypothe
 Lipidomics data from several, metabolically connected tissues from control and experimental groups
 can be used to plot the spatial or temporal distribution of lipids.
 These distributions identify where changes in lipid metabolism occur and in which lipid pathways,
-indicating the locus and biochemical alterations that occur in a given phenotype.
+indicating the locus and biochemical alterations that occur in a given group.
 LTA was conceived in two parts.
 One is an Abundance Analysis,
-in which the error-normalised fold change (ENFC) for the control and given phenotype group is calculated.
+in which the error-normalised fold change (ENFC) for the control and given group group is calculated.
 Because the ratio of the control and experimental values is scaled by the error,
 the ENFCs are easy to plot and compare between compartments.
 The second part is a Switch Analysis.
@@ -116,11 +116,11 @@ namely:
 
 - Mode (_ie._ -ve vs +ve)
 - Sample ID
-- Phenotype (_ie._ lean vs obese)
+- group (_ie._ lean vs obese)
 - Tissue (_ie._ heart)
 
 Additionally,
-"phenotype" should be binary -
+"group" should be binary -
 that is,
 there should only be two categories -
 and the order for fold change calculation must be specified with
@@ -166,7 +166,7 @@ it will likely look a bit more like:
 
 ```shell
 lta --n-rows-metadata 11\
---phenotype Group \
+--group Group \
 --order obse lean \
 --tissue Compartment \
 --sample-id mouse
@@ -211,19 +211,19 @@ This value can have a significant impact on the analysis,
 so explore how it impacts your data!
 
 Many calculations are dependent on knowing where certain metadata is stored.
-Namely, the experimental conditions (specified with ``--phenotype``)
+Namely, the experimental conditions (specified with ``--group``)
 the tissue of origin (specified with ``--tissue``),
 the sample ID (specified with ``--sample-id``),
 and the lipidomics mode (specified with ``--mode``).
 If these are not passed,
-then they default to "Phenotype", "Tissue", "SampleID", and "Mode" respectively.
+then they default to "group", "Tissue", "SampleID", and "Mode" respectively.
 To find these rows,
 we also need to know the number of lines in your column metadata.
 This is specified with ``--n-rows-metadata``.
 Please the section on [expected data file structure](data) for more information.
 
 For the fold-change calculation in ENFC to make any sense,
-we need to know which group in ``phenotype`` is which.
+we need to know which group in ``group`` is which.
 You can specify this using the ``--order`` option like so:
 
 ```shell
@@ -285,7 +285,7 @@ For each type of lipid, you should see the following:
 
 A few notes!
 Fold change will **always** be ``order[0] / order[1]``.
-The Jaccard similarities are calculated between conditions specified in ``--phenotype``
+The Jaccard similarities are calculated between conditions specified in ``--group``
 across both tissues and lipid classes.
 The p-values for these similarities are calculated using the method outlined by
 [N. Chung, et. al.][jaccard].
