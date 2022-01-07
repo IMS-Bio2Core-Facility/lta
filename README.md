@@ -40,6 +40,18 @@ Current development is focused on developing the technique for complex networks 
 
 ### Installation
 
+Any installation of this tool requires Python.
+How to install Python correctly is beyond this scope,
+but there are some excellent resources available
+[here][realpython]
+and [here][psf].
+If you are planning to have multiple versions of python installed,
+you might want to consider [pyenv][pyenv].
+
+```{warning}
+We only support Python {math}`>=` 3.7.1
+```
+
 #### Installing from PyPI
 
 This is the most straightforward way to set up the tool.
@@ -76,7 +88,7 @@ If you want to install a specific version,
 then change the last line in the previous code block to:
 
 ```shell
-pip install LipidTA==0.12.1
+pip install LipidTA==1.0.0
 ```
 
 replacing the version number with the version number you want.
@@ -124,10 +136,10 @@ Additionally,
 that is,
 there should only be two categories -
 and the order for fold change calculation must be specified with
-``--order Cond1 Cond2``.
-Fold Change will always be calculated as ``Cond1 / Cond2``.
+`--order Cond1 Cond2`.
+Fold Change will always be calculated as {math}`Cond1 / Cond2`.
 
-These rows should be in the first ``n`` rows of your data file,
+These rows should be in the first {math}`n` rows of your data file,
 where n is specified with the option ``--n-rows-metadata``.
 You can name these metadata rows whatever you want in the data file,
 and tell ``lta`` where to find them with the appropriate flags.
@@ -165,7 +177,7 @@ In that case,
 it will likely look a bit more like:
 
 ```shell
-lta --n-rows-metadata 11\
+lta --n-rows-metadata 11 \
 --group Group \
 --order obse lean \
 --tissue Compartment \
@@ -233,9 +245,9 @@ lta data results --order obese lean
 The first word following order will be treated as the experimental group,
 while the second word will be treated as the control group.
 In this example then,
-fold-change would be give as ``obese / lean``.
+fold-change would be give as {math}`obese / lean`.
 If you don't specify,
-this defaults to ``experimental / control``.
+this defaults to {math}`experimental / control`.
 
 (configuration)=
 
@@ -284,7 +296,7 @@ For each type of lipid, you should see the following:
 1. ``jaccard_similarity.csv`` - the Jaccard similarity and p-value for each lipid class.
 
 A few notes!
-Fold change will **always** be ``order[0] / order[1]``.
+Fold change will **always** be {math}`order[0] / order[1]`.
 The Jaccard similarities are calculated between conditions specified in ``--group``
 across both tissues and lipid classes.
 The p-values for these similarities are calculated using the method outlined by
@@ -329,6 +341,9 @@ please cite the following manuscripts:
 [github]: https://github.com/IMS-Bio2Core-Facility/lta "LTA Source Code"
 [readthedocs]: http://lta.readthedocs.io/ "LTA Documentation"
 [pypi]: https://pypi.org/project/gtexquery/ "LTA PyPI Package"
+[realpython]: https://realpython.com/installing-python/ "RealPython Install Python"
+[psf]: https://wiki.python.org/moin/BeginnersGuide/Download "PSF Install Python"
+[pyenv]: https://github.com/pyenv/pyenv "PyEnv"
 [pipx]: https://pypa.github.io/pipx/ "pipx"
 [venv]: https://docs.python.org/3/tutorial/venv.html "Python venv"
 [tags]: https://github.com/IMS-Bio2Core-Facility/lta/releases "LTA releases"
