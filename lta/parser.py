@@ -18,12 +18,12 @@ but there is little apparent improvement past ~10000 repetitions.
 A deault of 1000 is used to provide a balance between speed and accuracy.
 
 Many calculations are dependent on knowing where certain metadata is stored.
-Namely, the experimental conditions (specified with ``--phenotype``),
+Namely, the experimental conditions (specified with ``--group``),
 the tissue of origin (specified with ``--tissue``),
 the sample ID (specified with ``--sample-id``),
 and the lipidomics mode (specifed with ``--mode``).
 If these are not passed,
-then they default to "Phenotype", "Tissue", "SampleID", and "Mode" respectively.
+then they default to "group", "Tissue", "SampleID", and "Mode" respectively.
 
 We also have to know how many rows of metadata there are.
 This is specified with ``--n-rows-metadata``,
@@ -120,9 +120,9 @@ lta_parser.add_argument(
 )
 
 lta_parser.add_argument(
-    "--phenotype",
+    "--group",
     type=str,
-    default="Phenotype",
+    default="group",
     help="Metadata label for experimental conditions",
 )
 
