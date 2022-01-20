@@ -359,7 +359,7 @@ class Pipeline:
 
         This:
 
-        #. Calculates error-normalised fold change
+        #. Calculates error-normalised fold change for all conditions relatve to control
         #. Finds A-lipids and Jaccard distances.
         #. Finds U-lipids and Jaccard distances.
         #. Finds B-lipids (both picky and consistent) and Jaccard distances.
