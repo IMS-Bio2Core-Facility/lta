@@ -126,20 +126,19 @@ the values must be numeric.
 The analysis depends on a number of key metadata variables,
 namely:
 
-- Mode (_ie._ -ve vs +ve)
-- Sample ID
-- group (_ie._ lean vs obese)
-- Tissue (_ie._ heart)
-
-The order for fold change calculation must be specified with
-`--control CONTROL`.
-Fold Change will always be calculated by dividing all other condtions by `control`.
+- Mode: the lipidomics mode
+- Sample ID: a unique sample identifier
+- Group: the experimental condition
+- Tissue: the tissue of origin for the sample
 
 These rows should be in the first {math}`n` rows of your data file,
 where n is specified with the option `--n-rows-metadata`.
 You can name these metadata rows whatever you want in the data file,
 and tell `lta` where to find them with the appropriate flags.
-Please see the section on [customising your run](customising).
+We've done our best to choose sane defaults
+(please see the section on [default values](defaults)),
+and you can see the section on [customising your run](customising)
+for more details.
 However,
 if these data are not present,
 the tool will not run,
@@ -165,7 +164,40 @@ is a directory,
 or doesn't contain any data files,
 the command will error with an apropriate message.
 The secont argument identifies a folder in which the results will be saved.
-It will be create if it doesn't exist.
+It will be created if it doesn't exist.
+
+(defaults)=
+
+#### The Defaults
+
+To keep it as simple as above,
+you will need to use the defaults,
+outlined in the below table:
+
+| Parameter | Description | Default |
+| :--- | :---: | ---: |
+| threshold | The fraction of samples in which a lipid is 0 before it is dropped | 0.3 |
+| boot-reps | The number of bootstrap repetitions used to calculate probability | 1000 |
+| n-rows-metadata | The number of rows of metadata at the beginning of the data file| 11 |
+| group | The metadata row containing experimental conditions | Group |
+| control | The "control" condition, used as reference for fold change | control |
+| tissue | The metadata row containing the compartment of origin for each sample | Compartment |
+| mode | The metadata row containing the lipidomics mode | Mode |
+| sample-id | The metadata ro containing unique sample identifiers | SampleID |
+
+Don't worry if it looks intimidating!
+You can check out the section on [customising your run](customising)
+for further details,
+and help can always be found at our [documentation][readthedocs]
+or from the command line with:
+
+```shell
+lta -h
+```
+
+(customising)=
+
+#### Customising
 
 While it can be that simple,
 you'll likely have to customise some options for your run.
@@ -180,25 +212,11 @@ lta --n-rows-metadata 11 \
 --sample-id mouse
 ```
 
-Don't worry if it looks intimidating!
-You can check out the section on [customising your run](customising)
-for further details,
-and help can always be found at our [documentation][readthedocs]
-or from the command line with:
-
-```shell
-lta -h
-```
-
 Alternatively,
 you might prefer to use a configuration file to keep things simple.
 In that case,
 see the section on [configuration](configuration)
 for more information.
-
-(customising)=
-
-#### Customising
 
 There are a few options that can be customised for any given run.
 The statistics are calculated using a bootstrapping approach,
@@ -224,7 +242,7 @@ the tissue of origin (specified with ``--tissue``),
 the sample ID (specified with ``--sample-id``),
 and the lipidomics mode (specified with ``--mode``).
 If these are not passed,
-then they default to "group", "Tissue", "SampleID", and "Mode" respectively.
+then they default to "Group", "Tissue", "SampleID", and "Mode" respectively.
 To find these rows,
 we also need to know the number of lines in your column metadata.
 This is specified with ``--n-rows-metadata``.
@@ -235,7 +253,7 @@ experimental and control group.
 Without this knowledge,
 the concept of fold change is meaningless.
 To specify, pass ``--control control``.
-Every condition specified in ``group`` will then be divided by ``control``
+Every condition specified in ``Group`` will then be divided by ``control``
 to calculate the ENFC for all conditions.
 
 ```shell
