@@ -10,11 +10,10 @@ while the location to which the output files should be saved is the second posit
 The "0" threshold is specified with option ``-t/--threshold``.
 This should be passed as a floating point number between 0 and 1, inclusive.
 If it is not provided,
-then a default of 0.2 is used.
+then a default of 0.3 is used.
 The number of bootstrap replicates to use for estimating the p-values
 can be specified with ``-b/--boot-reps``.
 Generally, higher repetitions increases accuracy,
-but there is little apparent improvement past ~10000 repetitions.
 A deault of 1000 is used to provide a balance between speed and accuracy.
 
 Many calculations are dependent on knowing where certain metadata is stored.
@@ -23,7 +22,7 @@ the tissue of origin (specified with ``--tissue``),
 the sample ID (specified with ``--sample-id``),
 and the lipidomics mode (specifed with ``--mode``).
 If these are not passed,
-then they default to "group", "Tissue", "SampleID", and "Mode" respectively.
+then they default to "Group", "Tissue", "SampleID", and "Mode" respectively.
 
 We also have to know how many rows of metadata there are.
 This is specified with ``--n-rows-metadata``,
@@ -34,7 +33,7 @@ experimental and control group.
 Without this knowledge,
 the concept of fold change is meaningless.
 To specify, pass ``--control control``.
-Every condition specified in ``group`` will then be divided by ``control``
+Every condition specified in ``Group`` will then be divided by ``control``
 to calculate the ENFC for all conditions.
 
 Finally,
@@ -100,7 +99,7 @@ lta_parser.add_argument(
     "--threshold",
     type=float,
     choices=FloatRange(0, 1),  # type: ignore
-    default=0.2,
+    default=0.3,
     help="The '0' threshold",
 )
 
@@ -123,7 +122,7 @@ lta_parser.add_argument(
 lta_parser.add_argument(
     "--group",
     type=str,
-    default="group",
+    default="Group",
     help="Metadata label for experimental conditions",
 )
 
@@ -137,7 +136,7 @@ lta_parser.add_argument(
 lta_parser.add_argument(
     "--tissue",
     type=str,
-    default="Tissue",
+    default="Compartment",
     help="Metadata label for sample tissue",
 )
 
