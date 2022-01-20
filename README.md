@@ -131,18 +131,14 @@ namely:
 - group (_ie._ lean vs obese)
 - Tissue (_ie._ heart)
 
-Additionally,
-"group" should be binary -
-that is,
-there should only be two categories -
-and the order for fold change calculation must be specified with
-`--order Cond1 Cond2`.
-Fold Change will always be calculated as {math}`Cond1 / Cond2`.
+The order for fold change calculation must be specified with
+`--control CONTROL`.
+Fold Change will always be calculated by dividing all other condtions by `control`.
 
 These rows should be in the first {math}`n` rows of your data file,
-where n is specified with the option ``--n-rows-metadata``.
+where n is specified with the option `--n-rows-metadata`.
 You can name these metadata rows whatever you want in the data file,
-and tell ``lta`` where to find them with the appropriate flags.
+and tell `lta` where to find them with the appropriate flags.
 Please see the section on [customising your run](customising).
 However,
 if these data are not present,
@@ -179,7 +175,7 @@ it will likely look a bit more like:
 ```shell
 lta --n-rows-metadata 11 \
 --group Group \
---order obse lean \
+--control lean \
 --tissue Compartment \
 --sample-id mouse
 ```
@@ -234,20 +230,17 @@ we also need to know the number of lines in your column metadata.
 This is specified with ``--n-rows-metadata``.
 Please the section on [expected data file structure](data) for more information.
 
-For the fold-change calculation in ENFC to make any sense,
-we need to know which group in ``group`` is which.
-You can specify this using the ``--order`` option like so:
+The error-normalised fold change (ENFC) calculation must know the labels for
+experimental and control group.
+Without this knowledge,
+the concept of fold change is meaningless.
+To specify, pass ``--control control``.
+Every condition specified in ``group`` will then be divided by ``control``
+to calculate the ENFC for all conditions.
 
 ```shell
-lta data results --order obese lean
+lta data results --control lean
 ```
-
-The first word following order will be treated as the experimental group,
-while the second word will be treated as the control group.
-In this example then,
-fold-change would be give as {math}`obese / lean`.
-If you don't specify,
-this defaults to {math}`experimental / control`.
 
 (configuration)=
 
@@ -286,17 +279,22 @@ so be sure to either back up your data,
 or pass a different output folder!
 ```
 
-The output folder will contain 5 file.
+The output folder will contain 3 files and a directory.
 For each type of lipid, you should see the following:
 
-1. ``enfc_individual_lipids.csv`` - the ENFC results for each lipid.
-1. ``enfc_lipid_classes.csv`` - the mean and St.Dev. of ENFC, grouped by lipid class.
-1. ``switch_individual_lipid.csv`` - a table of lipids and their A/B/U/N classification.
-1. ``switch_lipid_classes.csv`` - a table counting the frequency of each lipid class within the A/B/U/N classification.
-1. ``jaccard_similarity.csv`` - the Jaccard similarity and p-value for each lipid class.
+1. `switch_individual_lipid.csv` - a table of lipids and their A/B/U/N classification.
+1. `switch_lipid_classes.csv` - a table counting the frequency of each lipid class within the A/B/U/N classification.
+1. `jaccard_similarity.csv` - the Jaccard similarity and p-value for each lipid class.
+1. `enfc` - a folder containing the ENFC results.
+
+Within the ENFC folder,
+you should see 2 files per group:
+
+1. ``GROUP_by_CONTROL_individual_lipids.csv`` - the ENFC results for each lipid.
+1. ``GROUP_by_CONTROL_lipid_classes.csv`` - the mean and St.Dev. of ENFC, grouped by lipid class.
 
 A few notes!
-Fold change will **always** be {math}`order[0] / order[1]`.
+Fold change will **always** be {math}`group / control`.
 The Jaccard similarities are calculated between conditions specified in ``--group``
 across both tissues and lipid classes.
 The p-values for these similarities are calculated using the method outlined by
@@ -325,6 +323,8 @@ respectful environment.
 ## Future Developments
 
 - [x] Improve Github actions to use caching for poetry and Nox
+- [x] Allow for multiple ENFC calculations in 1 run
+- [ ] Provide example configuration and data
 - [ ] Increase test coverage
 - [ ] Automate plotting
 
