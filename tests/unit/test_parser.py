@@ -6,8 +6,8 @@ from lta.commands.run import run
 from lta.parser import lta_parser
 
 expected = """usage: lta [-h] [-c CONFIG] [-t {[0, 1]}] [-b BOOT_REPS] [-n N_ROWS_METADATA]
-           [--group GROUP] [--order ORDER ORDER] [--tissue TISSUE]
-           [--mode MODE] [--sample-id SAMPLE_ID] [-V] [-v] [-l LOGFILE]
+           [--group GROUP] [--control CONTROL] [--tissue TISSUE] [--mode MODE]
+           [--sample-id SAMPLE_ID] [-V] [-v] [-l LOGFILE]
            file output
 """
 
