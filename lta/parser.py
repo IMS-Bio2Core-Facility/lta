@@ -33,8 +33,9 @@ The error-normalised fold change (ENFC) calculation must know the labels for
 experimental and control group.
 Without this knowledge,
 the concept of fold change is meaningless.
-To specify, pass ``--order experimental control``.
-Fold change will always be given as ``experimental / control``.
+To specify, pass ``--control control``.
+Every condition specified in ``group`` will then be divided by ``control``
+to calculate the ENFC for all conditions.
 
 Finally,
 all options *can be* passed in an config file.
@@ -127,11 +128,10 @@ lta_parser.add_argument(
 )
 
 lta_parser.add_argument(
-    "--order",
+    "--control",
     type=str,
-    nargs=2,
-    default=["experimental", "control"],
-    help="Experimental and control group labels",
+    default="control",
+    help="Control group for fold-change",
 )
 
 lta_parser.add_argument(

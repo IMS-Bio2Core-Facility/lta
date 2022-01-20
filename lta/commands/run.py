@@ -36,4 +36,4 @@ def run(args: configargparse.Namespace) -> None:
         args.boot_reps,
     )
     logger.debug("Running pipeline.")
-    pl.run(args.order)
+    pl.run(args.control)

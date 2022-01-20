@@ -4,7 +4,7 @@ import itertools
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 import pandas as pd
 
@@ -116,11 +116,9 @@ class Pipeline:
             group: df.loc[self.binary[group].index, :]
             for group, df in data.groupby(axis="columns", level=self.mode)
         }
-        self.output.mkdir(exist_ok=True, parents=True)
+        Path(self.output, "enfc").mkdir(exist_ok=True, parents=True)
 
-    def _calculate_enfc(
-        self, order: Optional[Tuple[str, str]] = None
-    ) -> Dict[str, pd.DataFrame]:
+    def _calculate_enfc(self, order: Tuple[str, str] = None) -> Dict[str, pd.DataFrame]:
         """Calculate error-normalised fold change.
 
         Calculates the ENFC for each tissue across modes.
@@ -356,7 +354,7 @@ class Pipeline:
         }
         return jaccard
 
-    def run(self, order: Tuple[str, str]) -> None:
+    def run(self, control: str) -> None:
         """Run the full LTA pipeline.
 
         This:
@@ -370,18 +368,27 @@ class Pipeline:
 
         Parameters
         ----------
-        order : Tuple[str, str]
-            The experimental group labels.
-            logfc fill be ``order[0] / order[1]``.
+        control : str
+            The control group for fold change.
+            logfc fill be each group divided by ``control``.
         """
-        self.enfc = self._calculate_enfc(order)
+        conditions = [
+            df.columns.get_level_values(self.level).unique()
+            for df in self.filtered.values()
+        ]
+        conditions = [val for mode in conditions for val in mode]
 
-        logger.debug("Generating ENFC summary files...")
-        enfc = pd.concat(self.enfc, axis="columns")
-        enfc.to_csv(self.output / "enfc_individual_lipids.csv")
-        enfc.groupby(axis="index", level="Category").agg(["mean", "std"]).to_csv(
-            self.output / "enfc_lipid_classes.csv"
-        )
+        for group in conditions:
+            self.enfc = self._calculate_enfc((group, control))
+
+            logger.debug("Generating ENFC summary files...")
+            enfc = pd.concat(self.enfc, axis="columns")
+            enfc.to_csv(
+                self.output / "enfc" / f"{group}_by_{control}_individual_lipids.csv"
+            )
+            enfc.groupby(axis="index", level="Category").agg(["mean", "std"]).to_csv(
+                self.output / "enfc" / f"{group}_by_{control}_lipid_classes.csv"
+            )
 
         self.a_lipids = self._get_a_lipids()
         self.a_jaccard = self._jaccard(self.a_lipids, "A-lipids")
