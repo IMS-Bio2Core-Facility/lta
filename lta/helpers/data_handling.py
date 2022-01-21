@@ -83,7 +83,7 @@ def not_zero(
     df: pd.DataFrame,
     axis: Literal["index", "columns"],
     level: str,
-    tissue: str,
+    compartment: str,
     thresh: float,
 ) -> pd.DataFrame:
     """Mark any group that has more than ``thresh`` fraction 0 as 0.
@@ -95,7 +95,7 @@ def not_zero(
     Finally,
     any lipid that is all 0 is dropped on the specified ``axis``
 
-    Grouping occurs across tissue and level in that order.
+    Grouping occurs across compartment and level in that order.
 
     Parameters
     ----------
@@ -105,8 +105,8 @@ def not_zero(
         Which multiindex to consider
     level : str
         The level of the multiindex to groupby
-    tissue : str
-        The level of the multiindex containing tissue sample
+    compartment : str
+        The level of the multiindex containing compartment sample
     thresh : float
         The fraction of samples above which a group is said to be 0
 
@@ -117,7 +117,7 @@ def not_zero(
     """
     df = (
         (df == 0)
-        .groupby(axis=axis, level=[tissue, level])
+        .groupby(axis=axis, level=[compartment, level])
         .agg(lambda x: x.sum() <= (thresh * len(x)))
     )
     if axis == "index":
