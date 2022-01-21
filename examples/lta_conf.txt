@@ -1,0 +1,8 @@
+threshold=0.3
+boot-reps=1000
+n-rows-metadata=11
+group=Group
+control=CON
+compartment=Compartment
+mode=Mode
+sample-id=SampleID

@@ -166,6 +166,11 @@ the command will error with an apropriate message.
 The secont argument identifies a folder in which the results will be saved.
 It will be created if it doesn't exist.
 
+```{important}
+To help get you up and running,
+a minimum dataset and configuration file are provided [here][examples].
+```
+
 (defaults)=
 
 #### The Defaults
@@ -366,6 +371,7 @@ please cite the following manuscripts:
 [venv]: https://docs.python.org/3/tutorial/venv.html "Python venv"
 [tags]: https://github.com/IMS-Bio2Core-Facility/lta/releases "LTA releases"
 [issues]: https://github.com/IMS-Bio2Core-Facility/lta/issues "LTA issues"
+[examples]: https://github.com/IMS-Bio2Core-Facility/lta/tree/main/examples "Examples"
 [jaccard]: https://doi.org/10.1186/s12859-019-3118-5 "Jaccard Probabilities"
 [paper_1]: https://www.nature.com/articles/s42003-021-01686-1 "LTA citation 1"
 [paper_2]: https://www.mdpi.com/1422-0067/22/14/7452 "LTA citation 2"
