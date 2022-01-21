@@ -18,11 +18,11 @@ A deault of 1000 is used to provide a balance between speed and accuracy.
 
 Many calculations are dependent on knowing where certain metadata is stored.
 Namely, the experimental conditions (specified with ``--group``),
-the tissue of origin (specified with ``--tissue``),
+the compartment of origin (specified with ``--compartment``),
 the sample ID (specified with ``--sample-id``),
 and the lipidomics mode (specifed with ``--mode``).
 If these are not passed,
-then they default to "Group", "Tissue", "SampleID", and "Mode" respectively.
+then they default to "Group", "Compartment", "SampleID", and "Mode" respectively.
 
 We also have to know how many rows of metadata there are.
 This is specified with ``--n-rows-metadata``,
@@ -134,10 +134,10 @@ lta_parser.add_argument(
 )
 
 lta_parser.add_argument(
-    "--tissue",
+    "--compartment",
     type=str,
     default="Compartment",
-    help="Metadata label for sample tissue",
+    help="Metadata label for sample compartment",
 )
 
 lta_parser.add_argument(

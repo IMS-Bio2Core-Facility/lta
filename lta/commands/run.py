@@ -29,7 +29,7 @@ def run(args: configargparse.Namespace) -> None:
         args.output,
         args.n_rows_metadata,
         args.group,
-        args.tissue,
+        args.compartment,
         args.mode,
         args.sample_id,
         args.threshold,

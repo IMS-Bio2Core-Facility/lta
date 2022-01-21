@@ -129,7 +129,7 @@ namely:
 - Mode: the lipidomics mode
 - Sample ID: a unique sample identifier
 - Group: the experimental condition
-- Tissue: the tissue of origin for the sample
+- Compartment: the comartment of origin for the sample
 
 These rows should be in the first {math}`n` rows of your data file,
 where n is specified with the option `--n-rows-metadata`.
@@ -181,7 +181,7 @@ outlined in the below table:
 | n-rows-metadata | The number of rows of metadata at the beginning of the data file| 11 |
 | group | The metadata row containing experimental conditions | Group |
 | control | The "control" condition, used as reference for fold change | control |
-| tissue | The metadata row containing the compartment of origin for each sample | Compartment |
+| comartment | The metadata row containing the compartment of origin for each sample | Compartment |
 | mode | The metadata row containing the lipidomics mode | Mode |
 | sample-id | The metadata ro containing unique sample identifiers | SampleID |
 
@@ -208,7 +208,7 @@ it will likely look a bit more like:
 lta --n-rows-metadata 11 \
 --group Group \
 --control lean \
---tissue Compartment \
+--compartment Compartment \
 --sample-id mouse
 ```
 
@@ -228,7 +228,7 @@ though I find little improvement beyond 20,000 reps.
 1000 (the default number) seems to provide a good balance between speed and accuracy.
 
 A critical step of the analysis is binarizing the lipid expression.
-A lipid is classed as 0 in a tissue/condition if
+A lipid is classed as 0 in a compartment/condition if
 the lipid is **not** detected in more than a particular fraction of samples.
 The default values is 0.2 (one-fifth of the samples).
 If you want to change it,
@@ -238,11 +238,11 @@ so explore how it impacts your data!
 
 Many calculations are dependent on knowing where certain metadata is stored.
 Namely, the experimental conditions (specified with ``--group``)
-the tissue of origin (specified with ``--tissue``),
+the compartment of origin (specified with ``--compartment``),
 the sample ID (specified with ``--sample-id``),
 and the lipidomics mode (specified with ``--mode``).
 If these are not passed,
-then they default to "Group", "Tissue", "SampleID", and "Mode" respectively.
+then they default to "Group", "Compartment", "SampleID", and "Mode" respectively.
 To find these rows,
 we also need to know the number of lines in your column metadata.
 This is specified with ``--n-rows-metadata``.
@@ -314,7 +314,7 @@ you should see 2 files per group:
 A few notes!
 Fold change will **always** be {math}`group / control`.
 The Jaccard similarities are calculated between conditions specified in ``--group``
-across both tissues and lipid classes.
+across both comartments and lipid classes.
 The p-values for these similarities are calculated using the method outlined by
 [N. Chung, et. al.][jaccard].
 For ENFC,
