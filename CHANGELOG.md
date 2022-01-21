@@ -2,6 +2,26 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.0 (2022-01-21)
+### Feature
+* **examples:** Provide minimum working examples ([`c0575f8`](https://github.com/IMS-Bio2Core-Facility/lta/commit/c0575f8eb3f4825c0e691acfc8b431e4e9a015e2))
+* **cli:** Calculate enfc against control ([`f9d7e6b`](https://github.com/IMS-Bio2Core-Facility/lta/commit/f9d7e6b7f2548a2afbe2ab2a894fc88134c3935d))
+
+### Fix
+* **parser.py:** Update default parameters ([`878df07`](https://github.com/IMS-Bio2Core-Facility/lta/commit/878df07b5df494c2a95d6f479737b973b66d4a4b))
+
+### Breaking
+* Current users should update any scripts and configs to use the new `--compartment` flag rather than the existing `--tissue` flag.  ([`5ca9aed`](https://github.com/IMS-Bio2Core-Facility/lta/commit/5ca9aed96cc692226edde90f75a33a3f1e22daef))
+* Users should update their configuration files to ensure that they specify 0.2 as the threshold if they wish to continue using the old value.  ([`878df07`](https://github.com/IMS-Bio2Core-Facility/lta/commit/878df07b5df494c2a95d6f479737b973b66d4a4b))
+* Previously, if multiple fold change calculations were desired, the user had to call `lta` multiple times. Now, a single call produces all fold change calculations for a set of experimental conditions. This feature could have been implemented by having the user specify all pairs they were interested in. While this could introduce more flexibility (ie it would allow for multiple "controls"), it also introduces more overhead for both the user and maintainer. Additionally, for the vast majority of experimental designs, there will be only one control. Closes #17.  ([`f9d7e6b`](https://github.com/IMS-Bio2Core-Facility/lta/commit/f9d7e6b7f2548a2afbe2ab2a894fc88134c3935d))
+
+### Documentation
+* **README.md:** Enumerate defaults ([`3404845`](https://github.com/IMS-Bio2Core-Facility/lta/commit/34048454bd116bf521ce8c02e45a50133b3851b8))
+* **pipeline.py:** Update docstrings for new functions ([`35e98d0`](https://github.com/IMS-Bio2Core-Facility/lta/commit/35e98d0387bfab0e6b7b59959ce451b2f51682ac))
+* **LICENSE:** Update copyright year ([`d4fd7a0`](https://github.com/IMS-Bio2Core-Facility/lta/commit/d4fd7a0e54743c1056e6b8e8b9ea41eb75c3a579))
+* **README.md:** Update usage instructions ([`cdc2f09`](https://github.com/IMS-Bio2Core-Facility/lta/commit/cdc2f09ac306a299f5c27189bff25fb7f045f598))
+* **README.md:** Add python installation instructions ([`4fc9b83`](https://github.com/IMS-Bio2Core-Facility/lta/commit/4fc9b83a67443349e254237d03e84f2dbd731d8f))
+
 ## v1.0.0 (2022-01-07)
 ### Feature
 * **cli:** Change phenotype to group ([`6b91841`](https://github.com/IMS-Bio2Core-Facility/lta/commit/6b918419e88136e2a47edccb65a0ff31cbace70e))
