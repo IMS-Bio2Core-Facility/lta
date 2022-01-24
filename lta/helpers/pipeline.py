@@ -381,6 +381,7 @@ class Pipeline:
             for df in self.filtered.values()
         ]
         conditions = [val for mode in conditions for val in mode]
+        conditions = [val for val in conditions if val != control]
 
         for group in conditions:
             self.enfc = self._calculate_enfc((group, control))
