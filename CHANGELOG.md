@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.2 (2022-01-24)
+### Fix
+* **jaccard.py:** Catch zerodivision error ([`9278005`](https://github.com/IMS-Bio2Core-Facility/lta/commit/92780057c9283eb81fb71be967786ebd38a4540f))
+
+### Documentation
+* **pyproject.toml:** Update classifiers ([`f43ccab`](https://github.com/IMS-Bio2Core-Facility/lta/commit/f43ccaba5d71132f27b085e673ab4319bbcb4e3e))
+
 ## v2.0.1 (2022-01-24)
 ### Fix
 * **pipeline.py:** Exclude control condition ([`88313ed`](https://github.com/IMS-Bio2Core-Facility/lta/commit/88313ed2011bdbb8e36e8ea9fac478700b3c237c))
