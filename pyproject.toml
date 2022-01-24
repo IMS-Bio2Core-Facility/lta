@@ -11,10 +11,19 @@ documentation = "https://LTA.readthedocs.io/en/latest/"
 homepage = ""
 classifiers = [
         "Development Status :: 4 - Beta",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Environment :: Console",
         "Intended Audience :: Science/Research",
         "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Typing :: Typed",
 ]
 
 [tool.poetry.dependencies]
