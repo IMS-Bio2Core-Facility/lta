@@ -86,15 +86,20 @@ def similarity(
     intersect = (x & y).sum()
     union = x.sum() + y.sum() - intersect
 
+    denominator = px + py - (px * py)
+    if denominator == 0:
+        logging.debug("Denominator is 0. Returning np.nan")
+        return np.nan
+
     if union == 0:
         logging.debug("Union is 0. Calculating using px and py.")
-        j = (px * py) / (px + py - (px * py))
+        j = (px * py) / denominator
     else:
         j = intersect / union
 
     if center:
         logging.debug("Centering J.")
-        return j - ((px * py) / (px + py - (px * py)))
+        return j - ((px * py) / denominator)
     else:
         return j
 
