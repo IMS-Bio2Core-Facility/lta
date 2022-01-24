@@ -17,6 +17,14 @@ def test_sim_2d() -> None:
         jac.similarity(x, y)
 
 
+def test_sim_nan() -> None:
+    """It returns nan when px + py - (px * py) is 0."""
+    x = np.array([False], bool)
+    y = np.array([False], bool)
+    val = jac.similarity(x, y)
+    assert np.isnan(val)
+
+
 def test_sim_shape() -> None:
     """It raises an index error when input is not the same length."""
     x = np.array([True], bool)
