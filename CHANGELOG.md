@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.1 (2022-01-24)
+### Fix
+* **pipeline.py:** Exclude control condition ([`88313ed`](https://github.com/IMS-Bio2Core-Facility/lta/commit/88313ed2011bdbb8e36e8ea9fac478700b3c237c))
+
 ## v2.0.0 (2022-01-21)
 ### Feature
 * **examples:** Provide minimum working examples ([`c0575f8`](https://github.com/IMS-Bio2Core-Facility/lta/commit/c0575f8eb3f4825c0e691acfc8b431e4e9a015e2))
