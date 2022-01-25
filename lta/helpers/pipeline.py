@@ -385,13 +385,21 @@ class Pipeline:
 
         for group in conditions:
             self.enfc = self._calculate_enfc((group, control))
-
             logger.debug("Generating ENFC summary files...")
             enfc = pd.concat(self.enfc, axis="columns")
             enfc.to_csv(
                 self.output / "enfc" / f"{group}_by_{control}_individual_lipids.csv"
             )
-            enfc.groupby(axis="index", level="Category").agg(["mean", "std"]).to_csv(
+
+        self.filtered = {
+            mode: df.groupby(axis="index", level="Category").sum()
+            for mode, df in self.filtered.items()
+        }
+        for group in conditions:
+            self.enfc = self._calculate_enfc((group, control))
+            logger.debug("Generating class ENFC summary files...")
+            enfc = pd.concat(self.enfc, axis="columns")
+            enfc.to_csv(
                 self.output / "enfc" / f"{group}_by_{control}_lipid_classes.csv"
             )
 
