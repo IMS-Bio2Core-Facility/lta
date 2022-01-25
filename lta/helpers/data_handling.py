@@ -156,7 +156,7 @@ def enfc(
     Parameters
     ----------
     df : pd.DataFrame
-        The lipid data to convert to boolean
+        The dataframe containing lipid expression values
     axis : Literal['index', 'columns']
         Which multiindex to consider
     level : str
