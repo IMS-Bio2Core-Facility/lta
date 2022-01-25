@@ -36,6 +36,39 @@ The second part is a Switch Analysis.
 This computes the presence of variables across the network.
 Current development is focused on developing the technique for complex networks and on the rate of lipid transport.
 
+### On Version Numbers
+
+```{admonition} TLDR
+Prior to version 3,
+the Python implementation version **does not** correlate to the academic versions.
+From version 3,
+the Python and academic versions are the same.
+```
+
+LTA was developed initially in R,
+producing [LTA v1.0][lta_v1].
+This was used for the LTA in the first study to use the analysis,
+based on the hypothesis that differing carbohydrate intakes by fathers
+influenced their children's and grandchildren's lipid metabolism.
+See [Furse et al 2021][paper_1].
+The code was developed further in R to improve convenience for the user,
+and features such as the 0s threshold
+(the number of samples in which there is a non-zero value for abundance for it to count as present)
+was added for LTA v2.3.
+This version has been used in three subsequent studies.
+Please see [here][paper_2],
+[here][paper_3],
+and [here][paper_4].
+A desire to add more features and move to a more stable platform led us to move to Python for LTA v3.0.
+
+The Python implementation of LTA has strictly used automated semantic versioning over the course of its development.
+Thus,
+prior to version 3,
+**the version numbers of the Python inplementation and past R implementations have no correlation.**
+By convenient coincidence,
+the semantic versioning release of LipidTA v3 brings
+the python versioning and the academic versioning in-line.
+
 ## Using LTA from the command line
 
 ### Installation
@@ -347,7 +380,7 @@ respectful environment.
 
 - [x] Improve Github actions to use caching for poetry and Nox
 - [x] Allow for multiple ENFC calculations in 1 run
-- [ ] Provide example configuration and data
+- [x] Provide example configuration and data
 - [ ] Increase test coverage
 - [ ] Automate plotting
 
@@ -356,8 +389,10 @@ respectful environment.
 If you use LTA in your work,
 please cite the following manuscripts:
 
-1. Furse, S., Watkins, A.J., Hojat, N. *et al.* Lipid Traffic Analysis reveals the impact of high paternal carbohydrate intake on offsprings’ lipid metabolism. *Commun Biol* **4**, 163 (2021). [https://doi.org/10.1038/s42003-021-01686-1][paper_1]
-1. Furse, S.[^eq], Fernandez-Twinn, D.S.[^eq], *et al.* Lipid metabolism is dysregulated before, during and after pregnancy in a mouse model of gestational diabetes. *Int. J. Mol. Sci.* **22**, 7452 (2021). [https://doi.org/10.3390/ijms22147452][paper_2]
+1. Furse, S., _et al._ Lipid Traffic Analysis reveals the impact of high paternal carbohydrate intake on offsprings’ lipid metabolism. _Commun Biol_ **4**, 163 (2021). [https://doi.org/10.1038/s42003-021-01686-1][paper_1]
+1. Furse, S.[^eq], Fernandez-Twinn, D.S.[^eq], _et al._ Lipid metabolism is dysregulated before, during and after pregnancy in a mouse model of gestational diabetes. _Int. J. Mol. Sci._ **22**, 7452 (2021). [https://doi.org/10.3390/ijms22147452][paper_2]
+1. Furse, S., _et al._ Paternal nutritional programming of lipid metabolism is propagated by sperm and seminal plasma. _Metabolomics_ **2022**, [https://doi.org/10.17863/CAM.79565][paper_3]
+1. Furse, S., _et al._ A mouse model of gestational diabetes shows dysregulated lipid metabolism post-weaning, after return to euglycaemia.  _Nutrition & Diabetes_ **2022**, [_In Press_][paper_4]
 
 [^eq]: These authors contributed equally to this work.
 
@@ -373,5 +408,8 @@ please cite the following manuscripts:
 [issues]: https://github.com/IMS-Bio2Core-Facility/lta/issues "LTA issues"
 [examples]: https://github.com/IMS-Bio2Core-Facility/lta/tree/main/examples "Examples"
 [jaccard]: https://doi.org/10.1186/s12859-019-3118-5 "Jaccard Probabilities"
+[lta_v1]: https://doi.org/10.5281/zenodo.4309347 " LTA, R version 1"
 [paper_1]: https://www.nature.com/articles/s42003-021-01686-1 "LTA citation 1"
 [paper_2]: https://www.mdpi.com/1422-0067/22/14/7452 "LTA citation 2"
+[paper_3]: https://doi.org/10.17863/CAM.79565 "LTA citation 3"
+[paper_4]: https://www.repository.cam.ac.uk/handle/1810/332691 "LTA citation 4"
