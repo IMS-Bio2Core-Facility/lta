@@ -29,6 +29,7 @@ def run(args: configargparse.Namespace) -> None:
         args.output,
         args.n_rows_metadata,
         args.group,
+        args.control,
         args.compartment,
         args.mode,
         args.sample_id,
@@ -36,4 +37,4 @@ def run(args: configargparse.Namespace) -> None:
         args.boot_reps,
     )
     logger.debug("Running pipeline.")
-    pl.run(args.control)
+    pl.run()
