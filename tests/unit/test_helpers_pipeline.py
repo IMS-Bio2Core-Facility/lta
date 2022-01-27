@@ -23,7 +23,16 @@ def test_raise_NotFound(caplog: capture.CaptureFixture) -> None:
     """It handles FileNotFoundErrors."""
     with pytest.raises(FileNotFoundError):
         pipeline.Pipeline(
-            Path("foo.csv"), Path("bar"), 5, "spam", "eggs", "ham", "green", 0.2, 1
+            Path("foo.csv"),
+            Path("bar"),
+            5,
+            "spam",
+            "eggs",
+            "ham",
+            "green",
+            "sam",
+            0.2,
+            1,
         )
     assert caplog.record_tuples == [
         (
@@ -42,7 +51,7 @@ def test_raise_NotDir(mocker: MockerFixture, caplog: capture.CaptureFixture) -> 
     )
     with pytest.raises(IsADirectoryError):
         pipeline.Pipeline(
-            Path("foo"), Path("bar"), 5, "spam", "eggs", "ham", "green", 0.2, 1
+            Path("foo"), Path("bar"), 5, "spam", "eggs", "ham", "green", "sam", 0.2, 1
         )
     assert caplog.record_tuples == [
         (
@@ -61,7 +70,16 @@ def test_raise_Runtime(mocker: MockerFixture, caplog: capture.CaptureFixture) ->
     )
     with pytest.raises(pd.errors.EmptyDataError):
         pipeline.Pipeline(
-            Path("foo.csv"), Path("bar"), 5, "spam", "eggs", "ham", "green", 0.2, 1
+            Path("foo.csv"),
+            Path("bar"),
+            5,
+            "spam",
+            "eggs",
+            "ham",
+            "green",
+            "sam",
+            0.2,
+            1,
         )
     assert caplog.record_tuples == [
         (
