@@ -4,7 +4,7 @@ import itertools
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict
 
 import pandas as pd
 
@@ -29,6 +29,8 @@ class Pipeline:
         As Python is 0-indexed, passing ``11`` will read in rows ``0-10``.
     level : str
         Metadata location of experimental conditions.
+    control : str
+        Value within self.level that represents the control condition.
     compartment : str
         Metadata location of sample tissue compartment.
     mode : str
@@ -45,6 +47,7 @@ class Pipeline:
     output: Path
     n_rows_metadata: int
     level: str
+    control: str
     compartment: str
     mode: str
     sample_id: str
@@ -117,36 +120,44 @@ class Pipeline:
             for group, df in data.groupby(axis="columns", level=self.mode)
         }
         Path(self.output, "enfc").mkdir(exist_ok=True, parents=True)
+        Path(self.output, "jaccard").mkdir(exist_ok=True, parents=True)
 
-    def _calculate_enfc(self, order: Tuple[str, str] = None) -> Dict[str, pd.DataFrame]:
+        conditions = [
+            df.columns.get_level_values(self.level).unique()
+            for df in self.filtered.values()
+        ]
+        self.conditions = [
+            val for mode in conditions for val in mode if val != self.control
+        ]
+
+    def _calculate_enfc(self) -> Dict[str, Dict[str, pd.DataFrame]]:
         """Calculate error-normalised fold change.
 
         Calculates the ENFC for each compartment across modes.
         For fold change to be meaningful,
         order must be specified.
         This will report fold-change as
-        ``order[0] / order[1]``.
-
-        Parameters
-        ----------
-        order : Tuple[str, str]
-            The experimental group labels.
-            logfc fill be ``order[0] / order[1]``.
+        ``condition / self.control`` for all conditions
+        except control within self.value.
 
         Returns
         -------
-        Dict[str, pd.DataFrame]
-            Key is mode, value is the ENFC data
+        Dict[str, Dict[str, pd.DataFrame]]
+            Top level key is the experimental condition,
+            mapped to a dictionary of modes and ENFC results
         """
         logger.info("Calculating ENFC...")
         enfc = {
-            mode: df.groupby(axis="columns", level=self.compartment).agg(
-                dh.enfc,
-                axis="columns",
-                level=self.level,
-                order=order,
-            )
-            for mode, df in self.filtered.items()
+            group: {
+                mode: df.groupby(axis="columns", level=self.compartment).agg(
+                    dh.enfc,
+                    axis="columns",
+                    level=self.level,
+                    order=(group, self.control),
+                )
+                for mode, df in self.filtered.items()
+            }
+            for group in self.conditions
         }
         return enfc
 
@@ -324,7 +335,7 @@ class Pipeline:
 
     def _jaccard(
         self, data: Dict[str, pd.DataFrame], group: str
-    ) -> Dict[str, pd.DataFrame]:
+    ) -> Dict[str, Dict[str, pd.DataFrame]]:
         """Calculate jaccard similarity and p-values.
 
         This takes a dictionary of data.
@@ -345,20 +356,25 @@ class Pipeline:
 
         Returns
         -------
-        Dict[str, pd.DataFrame]
+        Dict[str, Dict[str, pd.DataFrame]]
             Keys are the compartment group and mode.
             Values are the table of Jaccard similarity and p-values.
         """
         logger.info(f"Calculating Jaccard similarity for {group}...")
         jaccard = {
-            mode: lipids.groupby(axis="index", level="Category").apply(
-                lambda x: jac.bootstrap(x.iloc[:, 0], x.iloc[:, 1], self.n)
-            )
-            for mode, lipids in data.items()
+            group: {
+                mode: lipids.groupby(axis="index", level="Category").apply(
+                    lambda x: jac.bootstrap(
+                        x.loc[:, group], x.loc[:, self.control], self.n
+                    )
+                )
+                for mode, lipids in data.items()
+            }
+            for group in self.conditions
         }
         return jaccard
 
-    def run(self, control: str) -> None:
+    def run(self) -> None:
         """Run the full LTA pipeline.
 
         This:
@@ -369,38 +385,25 @@ class Pipeline:
         #. Finds B-lipids (both picky and consistent) and Jaccard distances.
         #. Finds N2-lipids and Jaccard distances.
         #. Writes combined results.
-
-        Parameters
-        ----------
-        control : str
-            The control group for fold change.
-            logfc fill be each group divided by ``control``.
         """
-        conditions = [
-            df.columns.get_level_values(self.level).unique()
-            for df in self.filtered.values()
-        ]
-        conditions = [val for mode in conditions for val in mode]
-        conditions = [val for val in conditions if val != control]
-
-        for group in conditions:
-            self.enfc = self._calculate_enfc((group, control))
-            logger.debug("Generating ENFC summary files...")
-            enfc = pd.concat(self.enfc, axis="columns")
-            enfc.to_csv(
-                self.output / "enfc" / f"{group}_by_{control}_individual_lipids.csv"
+        logger.debug("Generating ENFC summary files...")
+        self.enfcs = self._calculate_enfc()
+        for group, data in self.enfcs.items():
+            pd.concat(data, axis="columns").to_csv(
+                self.output
+                / "enfc"
+                / f"{group}_by_{self.control}_individual_lipids.csv"
             )
 
+        logger.debug("Generating class ENFC summary files...")
         self.filtered = {
             mode: df.groupby(axis="index", level="Category").sum()
             for mode, df in self.filtered.items()
         }
-        for group in conditions:
-            self.enfc = self._calculate_enfc((group, control))
-            logger.debug("Generating class ENFC summary files...")
-            enfc = pd.concat(self.enfc, axis="columns")
-            enfc.to_csv(
-                self.output / "enfc" / f"{group}_by_{control}_lipid_classes.csv"
+        self.enfcs = self._calculate_enfc()
+        for group, data in self.enfcs.items():
+            pd.concat(data, axis="columns").to_csv(
+                self.output / "enfc" / f"{group}_by_{self.control}_lipid_classes.csv"
             )
 
         self.a_lipids = self._get_a_lipids()
@@ -435,16 +438,21 @@ class Pipeline:
             self.output / "switch_lipid_classes.csv"
         )
 
-        logger.debug("Generating Jaccard distanse summary files...")
-        jaccard = pd.concat(
-            {
-                **self.a_jaccard,
-                **self.bc_jaccard,
-                **self.bp_jaccard,
-                **self.n2_jaccard,
-                **self.u_jaccard,
-            },
-            axis="columns",
-        )
-        jaccard.columns.names = ["type_compartment_mode", "Metrics"]
-        jaccard.to_csv(self.output / "jaccard_similarity.csv")
+        logger.debug("Generating Jaccard distance summary files...")
+        for group in self.conditions:
+            jaccard = pd.concat(
+                {
+                    **self.a_jaccard[group],
+                    **self.bc_jaccard[group],
+                    **self.bp_jaccard[group],
+                    **self.n2_jaccard[group],
+                    **self.u_jaccard[group],
+                },
+                axis="columns",
+            )
+            jaccard.columns.names = ["type_compartment_mode", "Metrics"]
+            jaccard.to_csv(
+                self.output
+                / "jaccard"
+                / f"{group}_to_{self.control}_jaccard_similarity.csv"
+            )
