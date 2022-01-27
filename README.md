@@ -335,24 +335,30 @@ so be sure to either back up your data,
 or pass a different output folder!
 ```
 
-The output folder will contain 3 files and a directory.
+The output folder will contain 2 files and 2 directories.
 For each type of lipid, you should see the following:
 
 1. `switch_individual_lipid.csv` - a table of lipids and their A/B/U/N classification.
 1. `switch_lipid_classes.csv` - a table counting the frequency of each lipid class within the A/B/U/N classification.
-1. `jaccard_similarity.csv` - the Jaccard similarity and p-value for each lipid class.
+1. `jaccard` - the Jaccard similarity and p-value for each lipid class.
 1. `enfc` - a folder containing the ENFC results.
 
 Within the ENFC folder,
 you should see 2 files per group:
 
-1. ``GROUP_by_CONTROL_individual_lipids.csv`` - the ENFC results for each lipid.
-1. ``GROUP_by_CONTROL_lipid_classes.csv`` - the mean and St.Dev. of ENFC, grouped by lipid class.
+1. `GROUP_by_CONTROL_individual_lipids.csv` - the ENFC results for each lipid.
+1. `GROUP_by_CONTROL_lipid_classes.csv` - the mean and St.Dev. of ENFC, grouped by lipid class.
+
+Withing the Jaccard folder,
+you should see 1 file per group:
+
+1. `GROUP_by_CONTROL_jaccard_similarity.csv` - the Jaccard similarity and p-value
+for each lipid class
 
 A few notes!
 Fold change will **always** be {math}`group / control`.
 The Jaccard similarities are calculated between conditions specified in ``--group``
-across both comartments and lipid classes.
+across both compartments and lipid classes.
 The p-values for these similarities are calculated using the method outlined by
 [N. Chung, et. al.][jaccard].
 For ENFC,
