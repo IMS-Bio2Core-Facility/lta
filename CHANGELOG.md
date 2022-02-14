@@ -2,6 +2,22 @@
 
 <!--next-version-placeholder-->
 
+## v3.0.0 (2022-02-14)
+### Fix
+* **pipeline.py:** Filter jaccard calculations ([`ba0f97b`](https://github.com/IMS-Bio2Core-Facility/lta/commit/ba0f97bfc258f384186064dd8613af44ff0ac270))
+* **run.py:** Correct passing of control ([`04d5c5a`](https://github.com/IMS-Bio2Core-Facility/lta/commit/04d5c5a6a7e1b87f4691e74023dad41e835c0470))
+* **pipeline.py:** Correct grouped Jaccard calculation ([`c2c100c`](https://github.com/IMS-Bio2Core-Facility/lta/commit/c2c100c1aef9b29b5b06188bb8c721fde4a1e810))
+* **pipeline.py:** Correct enfc implementation ([`529fa49`](https://github.com/IMS-Bio2Core-Facility/lta/commit/529fa49e083ed0b27287c70f1e818f927956a66f))
+
+### Breaking
+* Previously, the pipeline only calculated the jaccard scores for a single, hard-coded pairing. This has been corrected. All users should update to continue to get the correct results.  ([`c2c100c`](https://github.com/IMS-Bio2Core-Facility/lta/commit/c2c100c1aef9b29b5b06188bb8c721fde4a1e810))
+* Prior implementations had calculated the ENFC for class by taking the mean and st.dev of the individual lipid ENFC for all lipids in a class. While not incorrect, this was inconsistent with prior work of this framework. Closes #23.  ([`529fa49`](https://github.com/IMS-Bio2Core-Facility/lta/commit/529fa49e083ed0b27287c70f1e818f927956a66f))
+
+### Documentation
+* **README.md:** Update output desciption ([`366dd98`](https://github.com/IMS-Bio2Core-Facility/lta/commit/366dd982703c53f5cf0347f3db2bb1173dba7837))
+* **data_handling.py:** Correct docstrings ([`bfadda5`](https://github.com/IMS-Bio2Core-Facility/lta/commit/bfadda55ccb0ae09e238e83530a71ad627cbe697))
+* **README.md:** Add version number disclaimer ([`b2b78dd`](https://github.com/IMS-Bio2Core-Facility/lta/commit/b2b78dd6dbf7fecad3c420771a00b1998487f1ef))
+
 ## v2.0.2 (2022-01-24)
 ### Fix
 * **jaccard.py:** Catch zerodivision error ([`9278005`](https://github.com/IMS-Bio2Core-Facility/lta/commit/92780057c9283eb81fb71be967786ebd38a4540f))
