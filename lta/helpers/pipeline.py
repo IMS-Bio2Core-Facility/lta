@@ -363,7 +363,11 @@ class Pipeline:
         logger.info(f"Calculating Jaccard similarity for {group}...")
         jaccard = {
             group: {
-                mode: lipids.groupby(axis="index", level="Category").apply(
+                mode: lipids.loc[:, [group, self.control]]
+                .groupby(axis="index", level="Category")
+                .filter(lambda df: df.sum().any())
+                .groupby(axis="index", level="Category")
+                .apply(
                     lambda x: jac.bootstrap(
                         x.loc[:, group], x.loc[:, self.control], self.n
                     )
