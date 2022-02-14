@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """Unit tests for the data_handling module."""
-import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 import pandas as pd
 import pytest
@@ -10,11 +9,6 @@ from pandas.testing import assert_frame_equal, assert_series_equal
 from pytest_mock import MockerFixture
 
 import lta.helpers.data_handling as dh
-
-if sys.version_info >= (3, 8):
-    from typing import Literal
-else:
-    from typing_extensions import Literal
 
 
 @pytest.mark.parametrize("index_names", [None, ["one", "two", "three"]])

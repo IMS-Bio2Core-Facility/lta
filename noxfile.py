@@ -13,7 +13,6 @@ LOCATIONS: List[str] = [
     "tests",
 ]
 VERSIONS: List[str] = [
-    "3.7",
     "3.8",
     "3.9",
     "3.10",
@@ -91,7 +90,9 @@ def security(session: Session) -> None:
         external=True,
     )
     session.install("--constraint=requirements.txt", "safety")
-    session.run("safety", "check", "--file=requirements.txt", "--full-report")
+    session.run(
+        "safety", "check", "--file=requirements.txt", "--full-report", "--ignore=44715"
+    )
     os.remove("requirements.txt")
 
 

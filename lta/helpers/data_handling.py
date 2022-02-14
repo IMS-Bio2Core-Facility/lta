@@ -8,17 +8,11 @@ and, thus, testable -
 by removing it from the harder to test context of the object.
 """
 import logging
-import sys
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Literal, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-
-if sys.version_info >= (3, 8):
-    from typing import Literal
-else:
-    from typing_extensions import Literal
 
 logger = logging.getLogger(__name__)
 

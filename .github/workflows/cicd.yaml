@@ -25,7 +25,7 @@ jobs:
       - name: Cache Nox
         uses: actions/cache@v2
         env:
-          CACHE_NUMBER: 0
+          CACHE_NUMBER: 1
         with:
           path: .nox
           key:
@@ -47,7 +47,7 @@ jobs:
       - name: Cache Nox
         uses: actions/cache@v2
         env:
-          CACHE_NUMBER: 1
+          CACHE_NUMBER: 2
         with:
           path: .nox
           key:
