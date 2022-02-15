@@ -74,11 +74,11 @@ def similarity(
         )
         raise TypeError
 
-    if not px:
+    if px is None:
         logging.debug("px not provided. Calculating as mean of x.")
         px = x.mean()
         assert isinstance(px, float)
-    if not py:
+    if py is None:
         logging.debug("py not provided. Calculating as mean of y.")
         py = y.mean()
         assert isinstance(py, float)
@@ -138,12 +138,14 @@ def distance(
     float
         The Jaccard distance between the 2 vectors
     """
-    if not px:
+    if px is None:
         logging.debug("px not provided. Calculating as mean of x.")
         px = x.mean()
-    if not py:
+        assert isinstance(px, float)
+    if py is None:
         logging.debug("py not provided. Calculating as mean of y.")
         py = y.mean()
+        assert isinstance(py, float)
     return 1 - similarity(x, y, center=False, px=px, py=py)
 
 
@@ -187,14 +189,15 @@ def bootstrap(
     Tuple[float, float]
         The Jaccard similarity and p_val.
     """
-    if not px:
+    j = similarity(x, y, center=False, px=px, py=py)
+    if px is None:
         logging.debug("px not provided. Calculating as mean of x.")
         px = x.mean()
-    if not py:
+        assert isinstance(px, float)
+    if py is None:
         logging.debug("py not provided. Calculating as mean of y.")
         py = y.mean()
-
-    j = similarity(x, y, center=False, px=px, py=py)
+        assert isinstance(py, float)
     if px == 1 or py == 1 or len(x) == x.sum() or len(y) == y.sum():
         logger.warning("Bootstrap is degenerate as at least one vector is all 1.")
         return pd.Series([j, 1], index=["J-sim", "p-val"])
@@ -214,5 +217,6 @@ def bootstrap(
         for _ in range(n)
     )
     j_null = np.fromiter(vals, dtype=np.float32, count=n)
-    p_val = (np.abs(j_null, dtype=np.float32, out=j_null) >= np.abs(j_obs)).sum() / n
+    np.abs(j_null, dtype=np.float32, out=j_null)
+    p_val = (j_null >= np.abs(j_obs)).sum() / n
     return pd.Series([j, p_val], index=["J-sim", "p-val"])
