@@ -364,12 +364,11 @@ class Pipeline:
         jaccard = {
             group: {
                 mode: lipids.loc[:, [group, self.control]]
-                .groupby(axis="index", level="Category")
-                .filter(lambda df: df.sum().any())
+                .pipe(lambda df: df.loc[df.sum(axis=1) != 0, :])
                 .groupby(axis="index", level="Category")
                 .apply(
                     lambda x: jac.bootstrap(
-                        x.loc[:, group], x.loc[:, self.control], self.n
+                        x.loc[:, group], x.loc[:, self.control], n=self.n
                     )
                 )
                 for mode, lipids in data.items()
