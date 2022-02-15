@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v3.0.1 (2022-02-15)
+### Fix
+* **pipeline.py:** Correct filters of jaccard ([`5679713`](https://github.com/IMS-Bio2Core-Facility/lta/commit/5679713f3eeb6cb083cb502b44868c8b018b036d))
+
 ## v3.0.0 (2022-02-14)
 ### Fix
 * **pipeline.py:** Filter jaccard calculations ([`ba0f97b`](https://github.com/IMS-Bio2Core-Facility/lta/commit/ba0f97bfc258f384186064dd8613af44ff0ac270))
