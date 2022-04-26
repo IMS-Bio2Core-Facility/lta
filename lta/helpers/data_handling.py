@@ -22,7 +22,7 @@ def construct_df(
     n_rows: int,
     metadata: List[str],
     index_names: Optional[List[str]] = None,
-    **kwargs: Any,
+    **kwargs: Any,  # noqa: ANN401
 ) -> pd.DataFrame:
     """Construct a dataframe from the given path.
 
