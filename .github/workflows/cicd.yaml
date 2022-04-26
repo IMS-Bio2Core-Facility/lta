@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
 
 env:
-  POETRY_VERSION: 1.1.12
-  PSR_VERSION: 7.23.0
+  POETRY_VERSION: 1.1.13
+  PSR_VERSION: 7.28.1
   CACHE_NUMBER: 3
 
 # We cache the lint and security job, as there is no poetry install
