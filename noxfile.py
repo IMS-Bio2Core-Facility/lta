@@ -22,7 +22,9 @@ nox.options.stop_on_first_error = False
 nox.options.reuse_existing_virtualenvs = True
 
 
-def constrained_install(session: Session, *args: str, **kwargs: Any) -> None:
+def constrained_install(
+    session: Session, *args: str, **kwargs: Any  # noqa: ANN401
+) -> None:
     """Install packages with poetry version constraint."""
     session.run(
         "poetry",
@@ -110,6 +112,7 @@ def tests(session: Session) -> None:
         "pytest-sugar",
         "pytest-mock",
         "pytest-cov",
+        "pytest-xdist",
         "xdoctest",
     )
     session.run("pytest", *args)
