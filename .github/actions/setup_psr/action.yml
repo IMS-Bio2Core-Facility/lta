@@ -35,12 +35,15 @@ runs:
         key:
           pip${{ inputs.cache_number }}-PT${{ inputs.poetry_version }}-PRS${{ inputs.psr_version }}
     - name: Get Dependencies
+      shell: bash
       run: |
         pip install poetry==${{ inputs.poetry_version }} python-semantic-release==${{ inputs.psr_version }}
     - name: Configure git
+      shell: bash
       run: |
         git config --global user.name 'rbpatt2019'
         git config --global user.email 'rbpatt2019@users.noreply.github.com'
     - name: Python Semantic Release
+      shell: bash
       run: |
         semantic-release -v DEBUG publish
