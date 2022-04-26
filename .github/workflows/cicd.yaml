@@ -12,6 +12,7 @@ on:
 env:
   POETRY_VERSION: 1.1.12
   PSR_VERSION: 7.23.0
+  CACHE_NUMBER: 3
 
 # We cache the lint and security job, as there is no poetry install
 jobs:
@@ -20,20 +21,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup Nox
-        uses: excitedleigh/setup-nox@v2.0.0
-      - name: Cache Nox
-        uses: actions/cache@v2
-        env:
-          CACHE_NUMBER: 1
+      - name: Setup Nox and Poetry
+        uses: ./.github/actions/setup_nox
         with:
-          path: .nox
-          key:
-            nox-${{ env.CACHE_NUMBER }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('poetry.lock') }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1.3.0
-        with:
-          version: ${{ env.POETRY_VERSION }}
+          cache_number: ${{ env.CACHE_NUMBER }}
+          poetry_version: ${{ env.POETRY_VERSION }}
       - name: Format and Lint
         run: nox -s form lint type
 
@@ -42,20 +34,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup Nox
-        uses: excitedleigh/setup-nox@v2.0.0
-      - name: Cache Nox
-        uses: actions/cache@v2
-        env:
-          CACHE_NUMBER: 2
+      - name: Setup Nox and Poetry
+        uses: ./.github/actions/setup_nox
         with:
-          path: .nox
-          key:
-            nox-${{ env.CACHE_NUMBER }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('poetry.lock') }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1.3.0
-        with:
-          version: ${{ env.POETRY_VERSION }}
+          cache_number: ${{ env.CACHE_NUMBER }}
+          poetry_version: ${{ env.POETRY_VERSION }}
       - name: Check for Dependency Vulnerabilities
         run: nox -s security
 
@@ -64,25 +47,23 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-    env:
-      OS: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup Nox
-        uses: excitedleigh/setup-nox@v2.0.0
-      - name: Install Poetry
-        uses: snok/install-poetry@v1.3.0
+      - name: Setup Nox and Poetry
+        uses: ./.github/actions/setup_nox
         with:
-          version: ${{ env.POETRY_VERSION }}
+          cache_number: ${{ env.CACHE_NUMBER }}
+          poetry_version: ${{ env.POETRY_VERSION }}
       - name: Test Code and Docs
         run: nox -s tests
       - name: Upload to codecov
+        if: matrix.os  == "ubuntu-latest"
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
-          env_vars: OS
+          env_vars: ${{ matrix.os }}
           fail_ci_if_error: true
           verbose: true
 
@@ -90,34 +71,16 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
     needs: [lint, test, security]
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      REPOSITORY_USERNAME: __token__
-      REPOSITORY_PASSWORD: ${{ secrets.PYPI_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Setup Pyton
-        uses: actions/setup-python@v2
+      - name: Upload to PyPI
+        uses: ./.github/actions/setup_psr
         with:
-          python-version: 3.9
-      - name: Cache Pip
-        uses: actions/cache@v2
-        env:
-          CACHE_NUMBER: 0
-        with:
-          path: ~/.pip
-          key:
-            pip-${{ env.CACHE_NUMBER }}-PT${{ env.POETRY_VERSION }}-PRS${{ env.PSR_VERSION }}
-      - name: Get Dependencies
-        run: |
-          pip install poetry==$POETRY_VERSION python-semantic-release==$PSR_VERSION
-      - name: Configure git
-        run: |
-          git config --global user.name 'rbpatt2019'
-          git config --global user.email 'rbpatt2019@users.noreply.github.com'
-      - name: Python Semantic Release
-        run: |
-          semantic-release -v DEBUG publish
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          pypi_token: ${{ secrets.PYPI_TOKEN }}
+          cache_number: ${{ env.CACHE_NUMBER }}
+          poetry_version: ${{ env.POETRY_VERSION }}
+          psr_version: ${{ env.PSR_VERSION }}
