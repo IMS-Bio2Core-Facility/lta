@@ -58,7 +58,7 @@ jobs:
       - name: Test Code and Docs
         run: nox -s tests
       - name: Upload to codecov
-        if: matrix.os  == "ubuntu-latest"
+        if: matrix.os  == ubuntu-latest
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
