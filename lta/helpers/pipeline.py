@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Dict
 
 import pandas as pd
+from jaccard import jaccard as jac
 
 import lta.helpers.data_handling as dh
-import lta.helpers.jaccard as jac
 
 logger = logging.getLogger(__name__)
 

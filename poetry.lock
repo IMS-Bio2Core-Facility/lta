@@ -92,6 +92,18 @@ jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
+name = "boolean-jaccard"
+version = "0.1.1"
+description = "Jaccard metric calculations for boolean vectors"
+category = "main"
+optional = false
+python-versions = ">=3.8.0,<3.11"
+
+[package.dependencies]
+numpy = ">=1.22.3,<2.0.0"
+pandas = ">=1.4.2,<2.0.0"
+
+[[package]]
 name = "certifi"
 version = "2021.10.8"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -1278,7 +1290,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8.0,<3.11"
-content-hash = "bf0a868cc400486adb805a39e5d8fc1d86a4fbec8f4df5b696e7c929eb123407"
+content-hash = "c9d398526a2957212d570984ecc9a130b53dac24d120f6aa04b72afa480a494a"
 
 [metadata.files]
 alabaster = [
@@ -1329,6 +1341,10 @@ black = [
     {file = "black-22.3.0-cp39-cp39-win_amd64.whl", hash = "sha256:9b542ced1ec0ceeff5b37d69838106a6348e60db7b8fdd245294dc1d26136265"},
     {file = "black-22.3.0-py3-none-any.whl", hash = "sha256:bc58025940a896d7e5356952228b68f793cf5fcb342be703c3a2669a1488cb72"},
     {file = "black-22.3.0.tar.gz", hash = "sha256:35020b8886c022ced9282b51b5a875b6d1ab0c387b31a065b84db7c33085ca79"},
+]
+boolean-jaccard = [
+    {file = "boolean_jaccard-0.1.1-py3-none-any.whl", hash = "sha256:072750e0d3ce1f839b8b6dfb35d15f7167629d00cf5edaa8e358e8c9d16c3433"},
+    {file = "boolean_jaccard-0.1.1.tar.gz", hash = "sha256:659c67d7009991debc7b48b52928b5ae6a954c9829ca0e351b1c214b681bf512"},
 ]
 certifi = [
     {file = "certifi-2021.10.8-py2.py3-none-any.whl", hash = "sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"},

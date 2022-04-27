@@ -119,7 +119,7 @@ def tests(session: Session) -> None:
 
 
 @nox.session(python="3.10", reuse_venv=False)
-def doc_build(session: Session) -> None:
+def doc(session: Session) -> None:
     """Build the documentation."""
     session.run("poetry", "install", "--no-dev", external=True)
     constrained_install(
