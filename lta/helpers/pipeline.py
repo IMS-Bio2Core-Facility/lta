@@ -9,6 +9,7 @@ from typing import Dict
 import pandas as pd
 from jaccard import jaccard as jac
 
+from lta.helpers import utils
 import lta.helpers.data_handling as dh
 
 logger = logging.getLogger(__name__)
@@ -327,7 +328,7 @@ class Pipeline:
             logger.debug(
                 f"N{n} compartment groups after filtering: {[group for group, _ in data]}"
             )
-            for (compartments, df) in data:
+            for compartments, df in data:
                 n_type = "u" if n == 1 else f"n{n}"
                 group = "_".join([x.upper() for x in compartments])
                 results[f"{n_type}_{group}_{mode}"] = df
@@ -377,6 +378,74 @@ class Pipeline:
         }
         return jaccard
 
+    def _generate_enfc_summary(self) -> None:
+        logger.debug("Generating ENFC summary files...")
+        enfcs = self._calculate_enfc()
+        frames = []
+        levels = set()
+        for group, data in enfcs.items():
+            df = pd.concat(data, axis="columns")
+            df.to_csv(
+                self.output
+                / "enfc"
+                / f"{group}_by_{self.control}_individual_lipids.csv"
+            )
+            df.columns = utils.add_level_to_index(index=df.columns, new_level=group, new_level_name="Group")
+            frames.append(df)
+            levels.update(df.index.names)
+        utils.merge_dataframe_by_level(datas=frames, levels=levels).to_csv(
+            self.output / "enfc" / f"individual_lipids.csv"
+        )
+
+    def _generate_enfc_class_summary(self) -> None:
+        logger.debug("Generating class ENFC summary files...")
+        self.filtered = {
+            mode: df.groupby(axis="index", level="Category").sum()
+            for mode, df in self.filtered.items()
+        }
+        self.enfcs = self._calculate_enfc()
+        frames = []
+        levels = set()
+        for group, data in self.enfcs.items():
+            df = pd.concat(data, axis="columns")
+            df.to_csv(
+                self.output / "enfc" / f"{group}_by_{self.control}_lipid_classes.csv"
+            )
+            df.columns = utils.add_level_to_index(index=df.columns, new_level=group, new_level_name="Group")
+            frames.append(df)
+            levels.update(df.index.names)
+        utils.merge_dataframe_by_level(datas=frames, levels=levels).to_csv(
+            self.output / "enfc" / f"lipid_classes.csv"
+        )
+
+    def _generate_jaccard_distance_summary(self) -> None:
+        logger.debug("Generating Jaccard distance summary files...")
+        frames = []
+        levels = set()
+        for group in set(self.conditions):
+            jaccard = pd.concat(
+                {
+                    **self.a_jaccard[group],
+                    **self.bc_jaccard[group],
+                    **self.bp_jaccard[group],
+                    **self.n2_jaccard[group],
+                    **self.u_jaccard[group],
+                },
+                axis="columns",
+            )
+            jaccard.columns.names = ["type_compartment_mode", "Metrics"]
+            jaccard.to_csv(
+                self.output
+                / "jaccard"
+                / f"{group}_to_{self.control}_jaccard_similarity.csv"
+            )
+            jaccard.columns = utils.add_level_to_index(index=jaccard.columns, new_level=group, new_level_name="Group")
+            frames.append(jaccard)
+            levels.update(jaccard.index.names)
+        utils.merge_dataframe_by_level(datas=frames, levels=levels).to_csv(
+            self.output / "jaccard" / f"jaccard_similarity.csv"
+        )
+
     def run(self) -> None:
         """Run the full LTA pipeline.
 
@@ -389,25 +458,9 @@ class Pipeline:
         #. Finds N2-lipids and Jaccard distances.
         #. Writes combined results.
         """
-        logger.debug("Generating ENFC summary files...")
-        self.enfcs = self._calculate_enfc()
-        for group, data in self.enfcs.items():
-            pd.concat(data, axis="columns").to_csv(
-                self.output
-                / "enfc"
-                / f"{group}_by_{self.control}_individual_lipids.csv"
-            )
+        self._generate_enfc_summary()
 
-        logger.debug("Generating class ENFC summary files...")
-        self.filtered = {
-            mode: df.groupby(axis="index", level="Category").sum()
-            for mode, df in self.filtered.items()
-        }
-        self.enfcs = self._calculate_enfc()
-        for group, data in self.enfcs.items():
-            pd.concat(data, axis="columns").to_csv(
-                self.output / "enfc" / f"{group}_by_{self.control}_lipid_classes.csv"
-            )
+        self._generate_enfc_class_summary()
 
         self.a_lipids = self._get_a_lipids()
         self.a_jaccard = self._jaccard(self.a_lipids, "A-lipids")
@@ -441,21 +494,4 @@ class Pipeline:
             self.output / "switch_lipid_classes.csv"
         )
 
-        logger.debug("Generating Jaccard distance summary files...")
-        for group in self.conditions:
-            jaccard = pd.concat(
-                {
-                    **self.a_jaccard[group],
-                    **self.bc_jaccard[group],
-                    **self.bp_jaccard[group],
-                    **self.n2_jaccard[group],
-                    **self.u_jaccard[group],
-                },
-                axis="columns",
-            )
-            jaccard.columns.names = ["type_compartment_mode", "Metrics"]
-            jaccard.to_csv(
-                self.output
-                / "jaccard"
-                / f"{group}_to_{self.control}_jaccard_similarity.csv"
-            )
+        self._generate_jaccard_distance_summary()
