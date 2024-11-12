@@ -11,7 +11,10 @@ def merge_dataframe_by_level(
 
 
 def add_level_to_index(
-    *, index: pd.MultiIndex | pd.Index, new_level: typing.Any, new_level_name: str
+    *,
+    index: typing.Union[pd.MultiIndex, pd.Index],
+    new_level: typing.Any,
+    new_level_name: str
 ) -> pd.MultiIndex:
     names = index.names + [new_level_name]
     if isinstance(index, pd.MultiIndex):
