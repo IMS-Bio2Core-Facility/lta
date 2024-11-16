@@ -54,6 +54,7 @@ class Pipeline:
     sample_id: str
     thresh: float
     n: int
+    save_align_files: bool
 
     def __post_init__(self) -> None:
         """Post-process parameters.
@@ -390,14 +391,16 @@ class Pipeline:
                 axis="columns",
             )
             jaccard.columns.names = ["type_compartment_mode", "Metrics"]
-            jaccard.to_csv(self.output / "jaccard" / f"{phenotype}_to_{self.control}_jaccard_similarity.csv")
+            if self.save_align_files:
+                jaccard.to_csv(self.output / "jaccard" / f"{phenotype}_to_{self.control}_jaccard_similarity.csv")
             jaccard.columns = utils.add_level_to_index(
                 index=jaccard.columns, new_level=phenotype, new_level_name="Phenotype"
             )
             frames.append(jaccard)
             levels.update(jaccard.index.names)
         summary = utils.merge_dataframe_by_level(datas=frames, levels=levels)
-        summary.to_csv(self.output / "jaccard" / f"jaccard_similarity.csv")
+        if self.save_align_files:
+            summary.to_csv(self.output / "jaccard" / f"jaccard_similarity.csv")
         return summary
 
     def run(self) -> None:
@@ -463,11 +466,10 @@ class Pipeline:
             levels=lipid_classes.index.names,
         )
         merged_lipid_classes = utils.sort_columns(
-            data=merged_lipid_classes, level="type_compartment_mode", 
-            pressing=lipid_classes.columns.get_level_values("type_compartment_mode").unique().to_list()
+            data=merged_lipid_classes,
+            level="type_compartment_mode",
+            pressing=lipid_classes.columns.get_level_values("type_compartment_mode").unique().to_list(),
         )
         merged_lipid_classes = utils.sort_columns(data=merged_lipid_classes, level="Phenotype", pressing=[self.control])
-        merged_lipid_classes = utils.sort_columns(
-            data=merged_lipid_classes, level="Metrics", pressing=["-"]
-        )
-        merged_lipid_classes.to_csv(self.output / "merged_lipid_classes.csv")
+        merged_lipid_classes = utils.sort_columns(data=merged_lipid_classes, level="Metrics", pressing=["-"])
+        merged_lipid_classes.to_csv(self.output / "switch_lipid_classes_with_stats.csv")
