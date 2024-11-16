@@ -119,7 +119,8 @@ class Pipeline:
             group: df.loc[self.binary[group].index, :] for group, df in data.groupby(axis="columns", level=self.mode)
         }
         Path(self.output, "enfc").mkdir(exist_ok=True, parents=True)
-        Path(self.output, "jaccard").mkdir(exist_ok=True, parents=True)
+        if self.save_align_files:
+            Path(self.output, "jaccard").mkdir(exist_ok=True, parents=True)
 
         conditions = [df.columns.get_level_values(self.level).unique() for df in self.filtered.values()]
         self.conditions = [val for mode in conditions for val in mode if val != self.control]
