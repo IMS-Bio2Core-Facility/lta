@@ -177,4 +177,11 @@ lta_parser.add_argument(
     help="Location of logfile. May also be 'term' for Std.Out.",
 )
 
+lta_parser.add_argument(
+    "--savealignfiles",
+    default=False, 
+    action='store_true',
+    help="Keep a copy of alignment files.",
+)
+
 lta_parser.set_defaults(func=run)
