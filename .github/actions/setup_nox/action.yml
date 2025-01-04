@@ -9,7 +9,7 @@ inputs:
   poetry_version:
     description: "Which poetry version to use."
     required: True
-    default: 1.1.13
+    default: 1.8.5
 
 runs:
   using: composite
