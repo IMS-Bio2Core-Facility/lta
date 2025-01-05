@@ -8,7 +8,7 @@ authors = ["rbpatt2019 <rb.patterson.cross@gmail.com>"]
 readme = "README.md"
 repository = "https://github.com/IMS-Bio2Core-Facility/LTA"
 documentation = "https://LTA.readthedocs.io/en/latest/"
-homepage = "https://LTA.readthedocs.io/en/latest/"
+homepage = "https://pypi.org/project/lipidta/"
 classifiers = [
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
