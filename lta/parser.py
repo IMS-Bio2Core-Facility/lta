@@ -179,8 +179,8 @@ lta_parser.add_argument(
 
 lta_parser.add_argument(
     "--savealignfiles",
-    default=False, 
-    action='store_true',
+    default=False,
+    action="store_true",
     help="Keep a copy of alignment files.",
 )
 

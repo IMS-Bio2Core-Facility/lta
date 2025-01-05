@@ -33,9 +33,9 @@ def binary_df() -> pd.DataFrame:
 
 
 @pytest.fixture
-def create_df() -> Callable[
-    [Tuple[int, int], int, List[str], int, List[str]], pd.DataFrame
-]:
+def create_df() -> (
+    Callable[[Tuple[int, int], int, List[str], int, List[str]], pd.DataFrame]
+):
     """Create a "random" dataframe.
 
     Technically, pytest fixtures don't take arguments.

@@ -35,7 +35,7 @@ def run(args: configargparse.Namespace) -> None:
         args.sample_id,
         args.threshold,
         args.boot_reps,
-        args.savealignfiles
+        args.savealignfiles,
     )
     logger.debug("Running pipeline.")
     pl.run()

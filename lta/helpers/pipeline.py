@@ -9,8 +9,8 @@ from typing import Dict
 import pandas as pd
 from jaccard import jaccard as jac
 
-from lta.helpers import utils
 import lta.helpers.data_handling as dh
+from lta.helpers import utils
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +101,9 @@ class Pipeline:
             logger.exception(f"{self.file} is a directory. A full traceback follows...")
             raise
         except pd.errors.EmptyDataError:
-            logger.exception(f"{self.file} contains no data. A full traceback follows...")
+            logger.exception(
+                f"{self.file} contains no data. A full traceback follows..."
+            )
             raise
         logger.debug("Binarizing data...")
         self.binary = {
@@ -116,14 +118,20 @@ class Pipeline:
         }
         logger.debug("Filtering data...")
         self.filtered = {
-            group: df.loc[self.binary[group].index, :] for group, df in data.groupby(axis="columns", level=self.mode)
+            group: df.loc[self.binary[group].index, :]
+            for group, df in data.groupby(axis="columns", level=self.mode)
         }
         Path(self.output, "enfc").mkdir(exist_ok=True, parents=True)
         if self.save_align_files:
             Path(self.output, "jaccard").mkdir(exist_ok=True, parents=True)
 
-        conditions = [df.columns.get_level_values(self.level).unique() for df in self.filtered.values()]
-        self.conditions = [val for mode in conditions for val in mode if val != self.control]
+        conditions = [
+            df.columns.get_level_values(self.level).unique()
+            for df in self.filtered.values()
+        ]
+        self.conditions = [
+            val for mode in conditions for val in mode if val != self.control
+        ]
 
     def _calculate_enfc(self) -> Dict[str, Dict[str, pd.DataFrame]]:
         """Calculate error-normalised fold change.
@@ -172,7 +180,9 @@ class Pipeline:
         logger.info("Calculating A-lipids...")
         results = {
             f"a_{mode}": (
-                df.groupby(axis="columns", level=self.level).all().pipe(lambda x: x.loc[x.any(axis="columns"), :])
+                df.groupby(axis="columns", level=self.level)
+                .all()
+                .pipe(lambda x: x.loc[x.any(axis="columns"), :])
             )
             for mode, df in self.binary.items()
         }
@@ -223,10 +233,16 @@ class Pipeline:
             # This assumes that self.binary and a_lip will have the same keys
             # Which is definitely True
             if picky:
-                data = {mode: df.drop(index=a_lip[f"a_{mode}"]) for mode, df in self.binary.items()}
+                data = {
+                    mode: df.drop(index=a_lip[f"a_{mode}"])
+                    for mode, df in self.binary.items()
+                }
                 subtype = "p"
             else:
-                data = {mode: df.loc[a_lip[f"a_{mode}"], :] for mode, df in self.binary.items()}
+                data = {
+                    mode: df.loc[a_lip[f"a_{mode}"], :]
+                    for mode, df in self.binary.items()
+                }
                 subtype = "c"
 
         logger.info(f"Calculating B{subtype}-lipids...")
@@ -282,32 +298,51 @@ class Pipeline:
             compartments = df.columns.get_level_values(self.compartment)
             # Mask required to prevent dropping levels
             # The initial check must be done with all compartments (only n)...
-            mask = df.groupby(axis="columns", level=self.compartment).any().sum(axis="columns") == n
+            mask = (
+                df.groupby(axis="columns", level=self.compartment)
+                .any()
+                .sum(axis="columns")
+                == n
+            )
 
             data = [
                 (group, df.loc[mask, compartments.isin(group)])
                 for group in itertools.combinations(compartments.unique(), n)
             ]
-            logger.debug(f"N{n} compartment groups before filtering: {[group for group, _ in data]}")
+            logger.debug(
+                f"N{n} compartment groups before filtering: {[group for group, _ in data]}"
+            )
             # ...which necessitates a second check to drop those that are not
             # Again, mask necessary for keeping info
             # Also, we only care for groups with lipids
             masks = [
-                df.groupby(axis="columns", level=self.compartment).any().sum(axis="columns") == n for _, df in data
+                df.groupby(axis="columns", level=self.compartment)
+                .any()
+                .sum(axis="columns")
+                == n
+                for _, df in data
             ]
             data = [
                 (group, df.loc[mask, :].groupby(axis="columns", level=self.level).all())
-                for (group, df), mask in zip(data, masks)
+                for (group, df), mask in zip(  # noqa: B905
+                    data,
+                    masks,
+                    #  strict=False, TODO: Remove this when python3.9 is suppport is dropped
+                )
                 if mask.sum() != 0
             ]
-            logger.debug(f"N{n} compartment groups after filtering: {[group for group, _ in data]}")
+            logger.debug(
+                f"N{n} compartment groups after filtering: {[group for group, _ in data]}"
+            )
             for compartments, df in data:
                 n_type = "u" if n == 1 else f"n{n}"
                 group = "_".join([x.upper() for x in compartments])
                 results[f"{n_type}_{group}_{mode}"] = df
         return results
 
-    def _jaccard(self, data: Dict[str, pd.DataFrame], group: str) -> Dict[str, Dict[str, pd.DataFrame]]:
+    def _jaccard(
+        self, data: Dict[str, pd.DataFrame], group: str
+    ) -> Dict[str, Dict[str, pd.DataFrame]]:
         """Calculate jaccard similarity and p-values.
 
         This takes a dictionary of data.
@@ -334,14 +369,18 @@ class Pipeline:
         """
         logger.info(f"Calculating Jaccard similarity for {group}...")
         jaccard = {
-            group: {
-                mode: lipids.loc[:, [group, self.control]]
+            g: {
+                mode: lipids.loc[:, [g, self.control]]
                 .pipe(lambda df: df.loc[df.sum(axis=1) != 0, :])
-                .groupby(axis="index", level="Category")
-                .apply(lambda x: jac.bootstrap(x.loc[:, group], x.loc[:, self.control], n=self.n))
+                .groupby(axis="index", level="Category", group_keys=False)
+                .apply(
+                    lambda x, g=g: jac.bootstrap(
+                        x.loc[:, g], x.loc[:, self.control], n=self.n
+                    )
+                )
                 for mode, lipids in data.items()
             }
-            for group in self.conditions
+            for g in self.conditions
         }
         return jaccard
 
@@ -352,28 +391,43 @@ class Pipeline:
         levels = set()
         for phenotype, data in enfcs.items():
             df = pd.concat(data, axis="columns")
-            df.to_csv(self.output / "enfc" / f"{phenotype}_by_{self.control}_individual_lipids.csv")
-            df.columns = utils.add_level_to_index(index=df.columns, new_level=phenotype, new_level_name="Phenotype")
+            df.to_csv(
+                self.output
+                / "enfc"
+                / f"{phenotype}_by_{self.control}_individual_lipids.csv"
+            )
+            df.columns = utils.add_level_to_index(
+                index=df.columns, new_level=phenotype, new_level_name="Phenotype"
+            )
             frames.append(df)
             levels.update(df.index.names)
-        summary = utils.merge_dataframe_by_level(datas=frames, levels=levels)
-        summary.to_csv(self.output / "enfc" / f"individual_lipids.csv")
+        summary = utils.merge_dataframe_by_columns(datas=frames)
+        summary.to_csv(self.output / "enfc" / "individual_lipids.csv")
         return summary
 
     def _generate_enfc_class_summary(self) -> pd.DataFrame:
         logger.debug("Generating class ENFC summary files...")
-        self.filtered = {mode: df.groupby(axis="index", level="Category").sum() for mode, df in self.filtered.items()}
+        self.filtered = {
+            mode: df.groupby(axis="index", level="Category").sum()
+            for mode, df in self.filtered.items()
+        }
         self.enfcs = self._calculate_enfc()
         frames = []
         levels = set()
         for phenotype, data in self.enfcs.items():
             df = pd.concat(data, axis="columns")
-            df.to_csv(self.output / "enfc" / f"{phenotype}_by_{self.control}_lipid_classes.csv")
-            df.columns = utils.add_level_to_index(index=df.columns, new_level=phenotype, new_level_name="Phenotype")
+            df.to_csv(
+                self.output
+                / "enfc"
+                / f"{phenotype}_by_{self.control}_lipid_classes.csv"
+            )
+            df.columns = utils.add_level_to_index(
+                index=df.columns, new_level=phenotype, new_level_name="Phenotype"
+            )
             frames.append(df)
             levels.update(df.index.names)
-        summary = utils.merge_dataframe_by_level(datas=frames, levels=levels)
-        summary.to_csv(self.output / "enfc" / f"lipid_classes.csv")
+        summary = utils.merge_dataframe_by_columns(datas=frames)
+        summary.to_csv(self.output / "enfc" / "lipid_classes.csv")
         return summary
 
     def _generate_jaccard_distance_summary(self) -> pd.DataFrame:
@@ -393,15 +447,19 @@ class Pipeline:
             )
             jaccard.columns.names = ["type_compartment_mode", "Metrics"]
             if self.save_align_files:
-                jaccard.to_csv(self.output / "jaccard" / f"{phenotype}_to_{self.control}_jaccard_similarity.csv")
+                jaccard.to_csv(
+                    self.output
+                    / "jaccard"
+                    / f"{phenotype}_to_{self.control}_jaccard_similarity.csv"
+                )
             jaccard.columns = utils.add_level_to_index(
                 index=jaccard.columns, new_level=phenotype, new_level_name="Phenotype"
             )
             frames.append(jaccard)
             levels.update(jaccard.index.names)
-        summary = utils.merge_dataframe_by_level(datas=frames, levels=levels)
+        summary = utils.merge_dataframe_by_columns(datas=frames)
         if self.save_align_files:
-            summary.to_csv(self.output / "jaccard" / f"jaccard_similarity.csv")
+            summary.to_csv(self.output / "jaccard" / "jaccard_similarity.csv")
         return summary
 
     def run(self) -> None:
@@ -459,18 +517,23 @@ class Pipeline:
         jaccard_similarity.columns = utils.reorder_index(
             index=jaccard_similarity.columns, orders=lipid_classes.columns.names
         )
-        merged_lipid_classes = utils.merge_dataframe_by_level(
+        merged_lipid_classes = utils.merge_dataframe_by_columns(
             datas=[
                 lipid_classes,
                 jaccard_similarity,
-            ],
-            levels=lipid_classes.index.names,
+            ]
         )
         merged_lipid_classes = utils.sort_columns(
             data=merged_lipid_classes,
             level="type_compartment_mode",
-            pressing=lipid_classes.columns.get_level_values("type_compartment_mode").unique().to_list(),
+            pressing=lipid_classes.columns.get_level_values("type_compartment_mode")
+            .unique()
+            .to_list(),
         )
-        merged_lipid_classes = utils.sort_columns(data=merged_lipid_classes, level="Phenotype", pressing=[self.control])
-        merged_lipid_classes = utils.sort_columns(data=merged_lipid_classes, level="Metrics", pressing=["-"])
+        merged_lipid_classes = utils.sort_columns(
+            data=merged_lipid_classes, level="Phenotype", pressing=[self.control]
+        )
+        merged_lipid_classes = utils.sort_columns(
+            data=merged_lipid_classes, level="Metrics", pressing=["-"]
+        )
         merged_lipid_classes.to_csv(self.output / "switch_lipid_classes_with_stats.csv")

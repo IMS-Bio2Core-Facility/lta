@@ -1,10 +1,17 @@
+"""Tests for the hierarchical clustering class."""
+
 import unittest
+
 import pandas as pd
+
 from lta.cores.cpa.clustering.hierarchical import HierarchicalClustering
 
 
 class TestHierarchicalClustering(unittest.TestCase):
-    def setUp(self):
+    """Unit tests for the HierarchicalClustering class."""
+
+    def setUp(self) -> None:
+        """Set up the test data and the HierarchicalClustering object."""
         self.number_clusters = 2
         self.data = pd.DataFrame(
             {
@@ -15,7 +22,8 @@ class TestHierarchicalClustering(unittest.TestCase):
         )
         self.hc = HierarchicalClustering(number_clusters=self.number_clusters)
 
-    def test_cluster(self):
+    def test_cluster(self) -> None:
+        """Test the cluster method."""
         clusters = self.hc.cluster(self.data)
         cluster_labels = set(range(self.number_clusters))
         self.assertEqual(len(clusters), self.data.shape[0])

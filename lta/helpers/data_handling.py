@@ -186,6 +186,11 @@ def enfc(
             .replace([np.inf, -np.inf, 0], np.NAN)
         )
     error = (
-        df.groupby(axis=axis, level=level).std().pow(2).sum(axis=axis).div(2).pow(0.5)
+        df.groupby(axis=axis, level=level)
+        .std(numeric_only=True)
+        .pow(2)
+        .sum(axis=axis)
+        .div(2)
+        .pow(0.5)
     )
     return logfc.div(error)

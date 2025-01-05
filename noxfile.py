@@ -13,7 +13,6 @@ LOCATIONS: List[str] = [
     "tests",
 ]
 VERSIONS: List[str] = [
-    "3.8",
     "3.9",
     "3.10",
 ]
@@ -29,13 +28,14 @@ def constrained_install(
     session.run(
         "poetry",
         "export",
-        "--dev",
+        "--with",
+        "dev",
         "--without-hashes",
         "--format=requirements.txt",
         "--output=requirements.txt",
         external=True,
     )
-    session.install("--constraint=requirements.txt", *args, **kwargs)
+    session.install("--requirement=requirements.txt", *args, **kwargs)
     os.remove("requirements.txt")
 
 
@@ -91,9 +91,14 @@ def security(session: Session) -> None:
         "--output=requirements.txt",
         external=True,
     )
-    session.install("--constraint=requirements.txt", "safety")
+    session.install("--requirement=requirements.txt", "safety")
     session.run(
-        "safety", "check", "--file=requirements.txt", "--full-report", "--ignore=44715"
+        "safety",
+        "check",
+        "--file=requirements.txt",
+        "--full-report",
+        "--ignore=44715",
+        "--ignore=51457",  # https://github.com/pytest-dev/pytest/issues/10392
     )
     os.remove("requirements.txt")
 
