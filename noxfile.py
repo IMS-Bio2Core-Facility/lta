@@ -21,12 +21,17 @@ nox.options.stop_on_first_error = False
 nox.options.reuse_existing_virtualenvs = True
 
 
+def poetry_path() -> str:
+    """Get the path to poetry."""
+    return os.environ.get("POETRY_PATH", "poetry")
+
+
 def constrained_install(
     session: Session, *args: str, **kwargs: Any  # noqa: ANN401
 ) -> None:
     """Install packages with poetry version constraint."""
     session.run(
-        "poetry",
+        poetry_path(),
         "export",
         "--with",
         "dev",
@@ -83,7 +88,7 @@ def type(session: Session) -> None:
 def security(session: Session) -> None:
     """Check security safety."""
     session.run(
-        "poetry",
+        poetry_path(),
         "export",
         "--dev",
         "--without-hashes",
@@ -107,7 +112,7 @@ def security(session: Session) -> None:
 def tests(session: Session) -> None:
     """Run the test suite with pytest."""
     args = session.posargs or []
-    session.run("poetry", "install", "--no-dev", external=True)
+    session.run(poetry_path(), "install", "--no-dev", external=True)
     constrained_install(  # These are required for tests. Don't clutter w/ all dependencies!
         session,
         "coverage",
@@ -126,7 +131,7 @@ def tests(session: Session) -> None:
 @nox.session(python="3.10", reuse_venv=False)
 def doc(session: Session) -> None:
     """Build the documentation."""
-    session.run("poetry", "install", "--no-dev", external=True)
+    session.run(poetry_path(), "install", "--no-dev", external=True)
     constrained_install(
         session,
         "sphinx",
