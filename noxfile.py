@@ -13,7 +13,6 @@ LOCATIONS: List[str] = [
     "tests",
 ]
 VERSIONS: List[str] = [
-    "3.8",
     "3.9",
     "3.10",
 ]
@@ -22,20 +21,26 @@ nox.options.stop_on_first_error = False
 nox.options.reuse_existing_virtualenvs = True
 
 
+def poetry_path() -> str:
+    """Get the path to poetry."""
+    return os.environ.get("POETRY_PATH", "poetry")
+
+
 def constrained_install(
     session: Session, *args: str, **kwargs: Any  # noqa: ANN401
 ) -> None:
     """Install packages with poetry version constraint."""
     session.run(
-        "poetry",
+        poetry_path(),
         "export",
-        "--dev",
+        "--with",
+        "dev",
         "--without-hashes",
         "--format=requirements.txt",
         "--output=requirements.txt",
         external=True,
     )
-    session.install("--constraint=requirements.txt", *args, **kwargs)
+    session.install("--requirement=requirements.txt", *args, **kwargs)
     os.remove("requirements.txt")
 
 
@@ -83,7 +88,7 @@ def type(session: Session) -> None:
 def security(session: Session) -> None:
     """Check security safety."""
     session.run(
-        "poetry",
+        poetry_path(),
         "export",
         "--dev",
         "--without-hashes",
@@ -91,9 +96,14 @@ def security(session: Session) -> None:
         "--output=requirements.txt",
         external=True,
     )
-    session.install("--constraint=requirements.txt", "safety")
+    session.install("--requirement=requirements.txt", "safety")
     session.run(
-        "safety", "check", "--file=requirements.txt", "--full-report", "--ignore=44715"
+        "safety",
+        "check",
+        "--file=requirements.txt",
+        "--full-report",
+        "--ignore=44715",
+        "--ignore=51457",  # https://github.com/pytest-dev/pytest/issues/10392
     )
     os.remove("requirements.txt")
 
@@ -102,7 +112,7 @@ def security(session: Session) -> None:
 def tests(session: Session) -> None:
     """Run the test suite with pytest."""
     args = session.posargs or []
-    session.run("poetry", "install", "--no-dev", external=True)
+    session.run(poetry_path(), "install", "--no-dev", external=True)
     constrained_install(  # These are required for tests. Don't clutter w/ all dependencies!
         session,
         "coverage",
@@ -121,7 +131,7 @@ def tests(session: Session) -> None:
 @nox.session(python="3.10", reuse_venv=False)
 def doc(session: Session) -> None:
     """Build the documentation."""
-    session.run("poetry", "install", "--no-dev", external=True)
+    session.run(poetry_path(), "install", "--no-dev", external=True)
     constrained_install(
         session,
         "sphinx",

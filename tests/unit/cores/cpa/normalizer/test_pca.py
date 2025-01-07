@@ -1,10 +1,17 @@
+"""Tests for the PCA normalizer class."""
+
 import unittest
+
 import pandas as pd
+
 from lta.cores.cpa.normalizer.pca import PrincipalComponentAnalysis
 
 
 class TestPrincipalComponentAnalysis(unittest.TestCase):
-    def setUp(self):
+    """Unit tests for the PrincipalComponentAnalysis class."""
+
+    def setUp(self) -> None:
+        """Set up the test data and the PrincipalComponentAnalysis object."""
         self.output_dimensions = 2
         self.data = pd.DataFrame(
             {
@@ -15,7 +22,8 @@ class TestPrincipalComponentAnalysis(unittest.TestCase):
         )
         self.pca = PrincipalComponentAnalysis(output_dimensions=self.output_dimensions)
 
-    def test_normalize(self):
+    def test_normalize(self) -> None:
+        """Test the normalize method."""
         normalized_data = self.pca.normalize(self.data)
         self.assertEqual(
             normalized_data.shape, (self.data.shape[0], self.output_dimensions)

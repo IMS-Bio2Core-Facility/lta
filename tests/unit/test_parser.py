@@ -8,6 +8,7 @@ from lta.parser import lta_parser
 expected = """usage: lta [-h] [-c CONFIG] [-t {[0, 1]}] [-b BOOT_REPS] [-n N_ROWS_METADATA]
            [--group GROUP] [--control CONTROL] [--compartment COMPARTMENT]
            [--mode MODE] [--sample-id SAMPLE_ID] [-V] [-v] [-l LOGFILE]
+           [--savealignfiles]
            file output
 """
 

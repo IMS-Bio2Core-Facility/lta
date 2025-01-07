@@ -13,13 +13,12 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from _pytest import capture
 from pytest_mock import MockerFixture
 
 from lta.helpers import pipeline
 
 
-def test_raise_NotFound(caplog: capture.CaptureFixture) -> None:
+def test_raise_NotFound(caplog: pytest.LogCaptureFixture) -> None:
     """It handles FileNotFoundErrors."""
     with pytest.raises(FileNotFoundError):
         pipeline.Pipeline(
@@ -33,6 +32,7 @@ def test_raise_NotFound(caplog: capture.CaptureFixture) -> None:
             "sam",
             0.2,
             1,
+            True,
         )
     assert caplog.record_tuples == [
         (
@@ -43,7 +43,7 @@ def test_raise_NotFound(caplog: capture.CaptureFixture) -> None:
     ], "Log record is not correct."
 
 
-def test_raise_NotDir(mocker: MockerFixture, caplog: capture.CaptureFixture) -> None:
+def test_raise_NotDir(mocker: MockerFixture, caplog: pytest.LogCaptureFixture) -> None:
     """It handles IsADirectoryErrors."""
     # I don't like mocking, but troubleshooting permissions on Github actions is worse
     mocker.patch(
@@ -51,7 +51,17 @@ def test_raise_NotDir(mocker: MockerFixture, caplog: capture.CaptureFixture) -> 
     )
     with pytest.raises(IsADirectoryError):
         pipeline.Pipeline(
-            Path("foo"), Path("bar"), 5, "spam", "eggs", "ham", "green", "sam", 0.2, 1
+            Path("foo"),
+            Path("bar"),
+            5,
+            "spam",
+            "eggs",
+            "ham",
+            "green",
+            "sam",
+            0.2,
+            1,
+            True,
         )
     assert caplog.record_tuples == [
         (
@@ -62,7 +72,7 @@ def test_raise_NotDir(mocker: MockerFixture, caplog: capture.CaptureFixture) -> 
     ], "Log record is not correct."
 
 
-def test_raise_Runtime(mocker: MockerFixture, caplog: capture.CaptureFixture) -> None:
+def test_raise_Runtime(mocker: MockerFixture, caplog: pytest.LogCaptureFixture) -> None:
     """It fails if a file is empty."""
     # I don't like mocking, but troubleshooting permissions on Github actions is worse
     mocker.patch(
@@ -80,6 +90,7 @@ def test_raise_Runtime(mocker: MockerFixture, caplog: capture.CaptureFixture) ->
             "sam",
             0.2,
             1,
+            True,
         )
     assert caplog.record_tuples == [
         (

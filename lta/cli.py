@@ -56,9 +56,11 @@ def main(args: Optional[configargparse.Namespace] = None) -> None:
         args.logfile = [logs / f"{now}.log"]
 
     handlers = [
-        cast(logging.Handler, logging.StreamHandler())
-        if log == "term"
-        else cast(logging.Handler, logging.FileHandler(log))
+        (
+            cast(logging.Handler, logging.StreamHandler())
+            if log == "term"
+            else cast(logging.Handler, logging.FileHandler(log))
+        )
         for log in args.logfile
     ]
     for h in handlers:
