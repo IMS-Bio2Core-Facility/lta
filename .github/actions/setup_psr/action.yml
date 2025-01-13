@@ -15,7 +15,7 @@ inputs:
   poetry_version:
     description: "Which poetry version to use."
     required: True
-    default: default: 1.8.5
+    default: 1.8.5
   psr_version:
     description: "Which python semantic release version to use."
     required: True

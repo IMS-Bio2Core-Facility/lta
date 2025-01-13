@@ -86,6 +86,8 @@ jobs:
     defaults:
       run:
         shell: bash
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
