@@ -48,6 +48,7 @@ def constrained_install(
 def form(session: Session) -> None:
     """Format code with isort and black."""
     args = session.posargs or LOCATIONS
+    session.run(poetry_path(), "install", "--no-dev", external=True)
     constrained_install(session, "isort", "black")
     session.run("isort", *args)
     session.run("black", *args)
