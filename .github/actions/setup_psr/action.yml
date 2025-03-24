@@ -19,7 +19,7 @@ inputs:
   psr_version:
     description: "Which python semantic release version to use."
     required: True
-    default: 1.1.13
+    default: 9.21.0
 
 runs:
   using: composite
@@ -29,7 +29,7 @@ runs:
       with:
         python-version: 3.9
     - name: Cache Pip
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.pip
         key:
@@ -46,4 +46,4 @@ runs:
     - name: Python Semantic Release
       shell: bash
       run: |
-        semantic-release -v DEBUG publish
+        semantic-release -v publish
