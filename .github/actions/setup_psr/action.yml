@@ -46,4 +46,5 @@ runs:
     - name: Python Semantic Release
       shell: bash
       run: |
+        export PYPI_TOKEN=${{ inputs.pypi_token }}
         semantic-release -v publish
