@@ -1,6 +1,9 @@
 # Changelog
 
 <!--next-version-placeholder-->
+## v3.5.1 (2025-10-29)
+* Upgraded 3rd party libraries of the package mainly for urlib.
+
 
 ## v3.5.0 (2025-01-09)
 ### Feature
