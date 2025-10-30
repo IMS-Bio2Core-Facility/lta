@@ -43,6 +43,11 @@ runs:
       run: |
         git config --global user.name 'rbpatt2019'
         git config --global user.email 'rbpatt2019@users.noreply.github.com'
+    - name: Build distributions
+      shell: bash
+      run: |
+        # ensure build outputs in repo
+        poetry build
     - name: Python Semantic Release
       shell: bash
       run: |
