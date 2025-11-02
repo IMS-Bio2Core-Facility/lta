@@ -47,6 +47,7 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.gh_token }}
         POETRY_PYPI_TOKEN_PYPI: ${{ inputs.pypi_token }}
+        PYPI_TOKEN: ${{ inputs.pypi_token }}
       shell: bash
       run: |
         semantic-release -v version
