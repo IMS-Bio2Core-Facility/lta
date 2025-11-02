@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath("../lta/"))
 project = "LTA"
 author = "Ryan B Patterson-Cross"
 copyright = "2021, IMS-MRL Bioinformatics and Biostatistic Core"
-version = "3.5.1"
+version = "3.5.2"
 extensions = [
     "sphinx_rtd_theme",
     "sphinx.ext.autodoc",
