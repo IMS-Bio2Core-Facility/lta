@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
       - name: Setup Nox and Poetry
         uses: ./.github/actions/setup_nox
         with:
@@ -40,7 +40,7 @@ jobs:
     needs: [ form ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
       - name: Setup Nox and Poetry
         uses: ./.github/actions/setup_nox
         with:
@@ -54,7 +54,7 @@ jobs:
     needs: [ form ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
       - name: Setup Nox and Poetry
         uses: ./.github/actions/setup_nox
         with:
@@ -68,7 +68,7 @@ jobs:
     needs: [ form ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
       - name: Setup Nox and Poetry
         uses: ./.github/actions/setup_nox
         with:
@@ -90,7 +90,7 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
       - name: Setup Nox and Poetry
         uses: ./.github/actions/setup_nox
         with:
