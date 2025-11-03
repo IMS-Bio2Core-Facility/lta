@@ -24,10 +24,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Setup Pyton
-      uses: actions/setup-python@v2
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
-        python-version: 3.9
+        python-version: '3.9'
     - name: Cache Pip
       uses: actions/cache@v4
       with:
@@ -43,13 +43,13 @@ runs:
       run: |
         git config --global user.name 'rbpatt2019'
         git config --global user.email 'rbpatt2019@users.noreply.github.com'
-    - name: Build distributions
-      shell: bash
-      run: |
-        # ensure build outputs in repo
-        poetry build
     - name: Python Semantic Release
+      env:
+        GH_TOKEN: ${{ inputs.gh_token }}
+        POETRY_PYPI_TOKEN_PYPI: ${{ inputs.pypi_token }}
+        PYPI_TOKEN: ${{ inputs.pypi_token }}
       shell: bash
       run: |
-        export PYPI_TOKEN=${{ inputs.pypi_token }}
-        semantic-release -v publish
+        semantic-release -v version
+        poetry build
+        poetry publish
