@@ -53,7 +53,8 @@ runs:
         PYPI_TOKEN: ${{ inputs.pypi_token }}
       shell: bash
       run: |
+        # Ensure paths don't have trailing slashes
+        REPO_PATH="${GITHUB_WORKSPACE%/}"
+        cd "$REPO_PATH"
         semantic-release -v version
         semantic-release -v publish
-        poetry build
-        poetry publish -vv
