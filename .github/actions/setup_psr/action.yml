@@ -11,7 +11,7 @@ inputs:
   cache_number:
     description: "A manually specified cache number. Useful for triggering new caches."
     required: True
-    default: 0
+    default: "0"
   poetry_version:
     description: "Which poetry version to use."
     required: True
@@ -43,18 +43,13 @@ runs:
       run: |
         git config --global user.name 'rbpatt2019'
         git config --global user.email 'rbpatt2019@users.noreply.github.com'
-        git remote set-url origin https://x-access-token:${{ inputs.gh_token }}@github.com/${GITHUB_REPOSITORY}.git
 
     - name: Python Semantic Release
       env:
         GH_TOKEN: ${{ inputs.gh_token }}
-        GITHUB_TOKEN: ${{ inputs.gh_token }}
         POETRY_PYPI_TOKEN_PYPI: ${{ inputs.pypi_token }}
-        PYPI_TOKEN: ${{ inputs.pypi_token }}
       shell: bash
       run: |
-        # Ensure paths don't have trailing slashes
-        REPO_PATH="${GITHUB_WORKSPACE%/}"
-        cd "$REPO_PATH"
-        semantic-release -v version
-        semantic-release -v publish
+        semantic-release version
+        poetry build
+        poetry publish

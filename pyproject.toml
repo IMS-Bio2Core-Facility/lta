@@ -77,12 +77,8 @@ version_toml = [
         "pyproject.toml:tool.poetry.version"
 ]
 changelog_file = "CHANGELOG.md"
-upload_to_pypi = true
-upload_to_release = true
 build_command = "poetry build"
 
-[tool.semantic_release.remote.token]
-env = "PYPI_TOKEN"
 
 [tool.coverage.run]
 branch = true
