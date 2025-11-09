@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v3.5.3 (2025-11-09)
+
+### Bug Fixes
+
+- Use pypi token to release
+  ([`3ea7833`](https://github.com/IMS-Bio2Core-Facility/lta/commit/3ea783310092705e6b3b90e141098cb50573da03))
+
+
 ## v3.5.2 (2025-11-09)
 
 ### Bug Fixes
