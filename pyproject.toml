@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "LipidTA"
+name = "LipidTrafficAnalysis"
 version = "3.5.3"
 packages=[{include = "lta"}]
 description = "Lipid Traffic Analysis"
 license = "MIT"
-authors = ["rbpatt2019 <rb.patterson.cross@gmail.com>"]
+authors = ["rbpatt2019 <rb.patterson.cross@gmail.com>", "Selok <selokyeung@gmail.com>"]
 readme = "README.md"
 repository = "https://github.com/IMS-Bio2Core-Facility/LTA"
 documentation = "https://LTA.readthedocs.io/en/latest/"
-homepage = "https://pypi.org/project/lipidta/"
+homepage = "https://pypi.org/project/LipidTrafficAnalysis/"
 classifiers = [
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
