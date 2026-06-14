@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Tests for lta.parser."""
+
 from _pytest import capture
 
 from lta.commands.run import run

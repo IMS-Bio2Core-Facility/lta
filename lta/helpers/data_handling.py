@@ -7,6 +7,7 @@ This makes the code more atomic -
 and, thus, testable -
 by removing it from the harder to test context of the object.
 """
+
 import logging
 from pathlib import Path
 from typing import Any, List, Literal, Optional, Tuple
@@ -109,11 +110,17 @@ def not_zero(
     pd.DataFrame
         The processed data.
     """
-    df = (
-        (df == 0)
-        .groupby(axis=axis, level=[compartment, level])
-        .agg(lambda x: x.sum() <= (thresh * len(x)))
-    )
+    bool_df = df == 0
+    if axis == "index":
+        df = bool_df.groupby(level=[compartment, level]).agg(
+            lambda x: x.sum() <= (thresh * len(x))
+        )
+    else:
+        df = (
+            bool_df.T.groupby(level=[compartment, level])
+            .agg(lambda x: x.sum() <= (thresh * len(x)))
+            .T
+        )
     if axis == "index":
         df = df.loc[:, df.any(axis=axis)]
     if axis == "columns":
@@ -168,7 +175,10 @@ def enfc(
     if not order:
         logging.debug("Order not passed. Defaulting to ('experimental', 'control')")
         order = ("experimental", "control")
-    mean = df.groupby(axis=axis, level=level).mean()
+    if axis == "index":
+        mean = df.groupby(level=level).mean()
+    else:
+        mean = df.T.groupby(level=level).mean().T
     logging.debug(f"Grouping/filtering on {axis}.")
     # Replace inf (x/0) with NaN
     # Replace 0 (0/x) with NaN
@@ -177,20 +187,30 @@ def enfc(
         logfc = np.log10(
             mean.loc[order[0], :]
             .div(mean.loc[order[1], :])
-            .replace([np.inf, -np.inf, 0], np.NAN)
+            .replace([np.inf, -np.inf, 0], np.nan)
         )
     else:
         logfc = np.log10(
             mean.loc[:, order[0]]
             .div(mean.loc[:, order[1]])
-            .replace([np.inf, -np.inf, 0], np.NAN)
+            .replace([np.inf, -np.inf, 0], np.nan)
         )
-    error = (
-        df.groupby(axis=axis, level=level)
-        .std(numeric_only=True)
-        .pow(2)
-        .sum(axis=axis)
-        .div(2)
-        .pow(0.5)
-    )
+    if axis == "index":
+        error = (
+            df.groupby(level=level)
+            .std(numeric_only=True)
+            .pow(2)
+            .sum(axis=axis)
+            .div(2)
+            .pow(0.5)
+        )
+    else:
+        error = (
+            df.T.groupby(level=level)
+            .std(numeric_only=True)
+            .T.pow(2)
+            .sum(axis=axis)
+            .div(2)
+            .pow(0.5)
+        )
     return logfc.div(error)

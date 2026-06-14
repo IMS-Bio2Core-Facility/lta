@@ -7,6 +7,7 @@ the version flag,
 or the help flag.
 It **will** test that any custom code plugged into the parser behaves correctly.
 """
+
 import argparse
 from pathlib import Path
 
