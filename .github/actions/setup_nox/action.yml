@@ -5,7 +5,7 @@ inputs:
   cache_number:
     description: "A manually specified cache number. Useful for triggering new caches."
     required: True
-    default: 0
+    default: "0"
   poetry_version:
     description: "Which poetry version to use."
     required: True
@@ -20,6 +20,18 @@ runs:
     - uses: actions/setup-python@v5
       with:
         python-version: "3.10"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.14"
     - name: "Install nox"
       run: pipx install nox
       shell: bash

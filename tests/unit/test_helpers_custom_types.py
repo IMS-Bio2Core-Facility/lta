@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Unit tests for the lta.helpers.custom_types module."""
+
 from collections.abc import Iterable
 
 from _pytest import capture

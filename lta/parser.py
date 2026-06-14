@@ -53,6 +53,7 @@ Attributes
 lta_parser : argparse.ArgumentParser
     The argument parser for the root command.
 """
+
 from pathlib import Path
 
 import configargparse

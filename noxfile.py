@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Nox session configuration."""
+
 import os
 from typing import Any, List
 
@@ -13,8 +14,11 @@ LOCATIONS: List[str] = [
     "tests",
 ]
 VERSIONS: List[str] = [
-    "3.9",
     "3.10",
+    "3.11",
+    "3.12",
+    "3.13",
+    "3.14",
 ]
 
 nox.options.stop_on_first_error = False
@@ -44,12 +48,12 @@ def constrained_install(
     os.remove("requirements.txt")
 
 
-@nox.session(python="3.10")
+@nox.session(python="3.13")
 def form(session: Session) -> None:
     """Format code with isort and black."""
     args = session.posargs or LOCATIONS
-    session.run(poetry_path(), "install", "--no-dev", external=True)
-    constrained_install(session, "isort", "black", external=True)
+    session.run(poetry_path(), "install", "--only", "main", external=True)
+    constrained_install(session, "isort", "black")
     session.run("isort", *args)
     session.run("black", *args)
 
@@ -71,7 +75,12 @@ def lint(session: Session) -> None:
         "flake8-spellcheck",
         "darglint",
     )
-    session.run("pflake8", *args)
+    if session.python == "3.14":
+        # flake8-bandit/bandit use ast.Constant.s removed in Python 3.14; remove to prevent crash
+        session.run("pip", "uninstall", "-y", "flake8-bandit", "bandit")
+        session.run("pflake8", "--extend-ignore=S", *args)
+    else:
+        session.run("pflake8", *args)
 
 
 @nox.session(python=VERSIONS)
@@ -85,27 +94,21 @@ def type(session: Session) -> None:
     session.run("mypy", "--ignore-missing-imports", *args)
 
 
-@nox.session(python="3.10")
+@nox.session(python="3.13")
 def security(session: Session) -> None:
     """Check security safety."""
     session.run(
         poetry_path(),
         "export",
-        "--dev",
+        "--with",
+        "dev",
         "--without-hashes",
         "--format=requirements.txt",
         "--output=requirements.txt",
         external=True,
     )
-    session.install("--requirement=requirements.txt", "safety")
-    session.run(
-        "safety",
-        "check",
-        "--file=requirements.txt",
-        "--full-report",
-        "--ignore=44715",
-        "--ignore=51457",  # https://github.com/pytest-dev/pytest/issues/10392
-    )
+    session.install("pip-audit")
+    session.run("pip-audit", "-r", "requirements.txt", "--skip-editable")
     os.remove("requirements.txt")
 
 
@@ -113,7 +116,7 @@ def security(session: Session) -> None:
 def tests(session: Session) -> None:
     """Run the test suite with pytest."""
     args = session.posargs or []
-    session.run(poetry_path(), "install", "--no-dev", external=True)
+    session.run(poetry_path(), "install", "--only", "main", external=True)
     constrained_install(  # These are required for tests. Don't clutter w/ all dependencies!
         session,
         "coverage",
@@ -129,10 +132,10 @@ def tests(session: Session) -> None:
     session.run("pytest", *args)
 
 
-@nox.session(python="3.10", reuse_venv=False)
+@nox.session(python="3.13", reuse_venv=False)
 def doc(session: Session) -> None:
     """Build the documentation."""
-    session.run(poetry_path(), "install", "--no-dev", external=True)
+    session.run(poetry_path(), "install", "--only", "main", external=True)
     constrained_install(
         session,
         "sphinx",

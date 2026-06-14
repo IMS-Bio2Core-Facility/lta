@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Unit tests for the data_handling module."""
+
 from pathlib import Path
 from typing import List, Literal, Optional
 

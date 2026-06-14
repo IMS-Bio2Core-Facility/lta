@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Tests for the simple command function."""
+
 import argparse
 from pathlib import Path
 

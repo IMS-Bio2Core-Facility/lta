@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Provide entry point for CLI."""
+
 import logging
 from datetime import datetime
 from pathlib import Path

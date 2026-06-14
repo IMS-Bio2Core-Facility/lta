@@ -46,7 +46,7 @@ jobs:
         with:
           cache_number: ${{ env.CACHE_NUMBER }}
           poetry_version: ${{ env.POETRY_VERSION }}
-      - name: Check for Dependency Vulnerabilities
+      - name: Lint code
         run: nox -s lint
 
   type:
@@ -60,7 +60,7 @@ jobs:
         with:
           cache_number: ${{ env.CACHE_NUMBER }}
           poetry_version: ${{ env.POETRY_VERSION }}
-      - name: Check for Dependency Vulnerabilities
+      - name: Type check
         run: nox -s type
 
   security:
@@ -103,7 +103,7 @@ jobs:
         run: nox -s tests
       - name: Upload to codecov
         if: matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
@@ -114,7 +114,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
-    needs: [lint, test, security]
+    needs: [lint, type, test, security]
     outputs:
       released: ${{ steps.release.outputs.released }}
       version: ${{ steps.release.outputs.version }}
@@ -129,7 +129,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.14'
 
       - name: Install dependencies
         run: |
@@ -149,8 +149,6 @@ jobs:
           semantic-release version
           poetry build
           semantic-release publish
-          # Mark that a release was created
-          echo "released=true" >> $GITHUB_OUTPUT
 
       - name: Upload distribution artifacts
         uses: actions/upload-artifact@v4

@@ -8,6 +8,7 @@ only the basic error handling is tested.
 If you can provide any contributions towards better unit tests for data science,
 please reach out!
 """
+
 import logging
 from pathlib import Path
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """A dataclass that allows for an object oriented pipeline."""
+
 import itertools
 import logging
 from dataclasses import dataclass
@@ -7,9 +8,9 @@ from pathlib import Path
 from typing import Dict
 
 import pandas as pd
-from jaccard import jaccard as jac
 
 import lta.helpers.data_handling as dh
+from lta.helpers import jaccard as jac
 from lta.helpers import utils
 
 logger = logging.getLogger(__name__)

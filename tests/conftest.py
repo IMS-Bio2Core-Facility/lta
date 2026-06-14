@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Fixtures for pytest."""
+
 from itertools import cycle, islice
 from typing import Callable, List, Optional, Tuple
 

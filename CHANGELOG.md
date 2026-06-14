@@ -1,6 +1,38 @@
 # CHANGELOG
 
 
+## v3.6.0 (2026-06-14)
+
+### Bug Fixes
+
+- **data_handling.py**: Fix deprecated pandas `groupby(axis=...)` API for pandas 2.0 compatibility
+
+- **data_handling.py**: Replace `np.NAN` with `np.nan` for NumPy 2.0 compatibility
+
+### Build System
+
+- **jaccard.py**: Vendor `boolean-jaccard` module locally; removes the external dependency which was
+  unmaintained and capped at Python < 3.11
+
+- **pyproject.toml**: Drop Python 3.8 and 3.9 support; add Python 3.11, 3.12, and 3.13 support
+
+- **pyproject.toml**: Bump pandas to `^2.0` and numpy to `^2.0`
+
+- **pyproject.toml**: Update dev tooling — flake8, pytest, coverage, black, Sphinx; replace `safety`
+  with `pip-audit`
+
+### Continuous Integration
+
+- **noxfile.py**: Update test matrix from Python 3.9/3.10 to 3.10–3.13; update default session
+  Python to 3.13
+
+- **noxfile.py**: Replace `safety` with `pip-audit` in security session; update `poetry export`
+  flags from `--dev` / `--no-dev` to `--with dev` / `--only main` for Poetry v1.2+ compatibility
+
+- **cicd.yaml**: Add Python 3.11–3.14 to CI setup; upgrade codecov action to v4; gate release job
+  on type check passing; fix CI step display names
+
+
 ## v3.5.3 (2025-11-09)
 
 ### Bug Fixes
