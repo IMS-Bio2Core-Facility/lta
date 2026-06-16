@@ -18,7 +18,6 @@ VERSIONS: List[str] = [
     "3.11",
     "3.12",
     "3.13",
-    "3.14",
 ]
 
 nox.options.stop_on_first_error = False
@@ -75,12 +74,7 @@ def lint(session: Session) -> None:
         "flake8-spellcheck",
         "darglint",
     )
-    if session.python == "3.14":
-        # flake8-bandit/bandit use ast.Constant.s removed in Python 3.14; remove to prevent crash
-        session.run("pip", "uninstall", "-y", "flake8-bandit", "bandit")
-        session.run("pflake8", "--extend-ignore=S", *args)
-    else:
-        session.run("pflake8", *args)
+    session.run("pflake8", *args)
 
 
 @nox.session(python=VERSIONS)

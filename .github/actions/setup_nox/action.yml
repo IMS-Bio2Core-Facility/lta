@@ -29,9 +29,6 @@ runs:
     - uses: actions/setup-python@v5
       with:
         python-version: "3.13"
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.14"
     - name: "Install nox"
       run: pipx install nox
       shell: bash
