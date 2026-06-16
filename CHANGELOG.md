@@ -1,36 +1,25 @@
 # CHANGELOG
 
 
-## v3.6.0 (2026-06-14)
+## v3.6.0 (2026-06-16)
 
 ### Bug Fixes
 
-- **data_handling.py**: Fix deprecated pandas `groupby(axis=...)` API for pandas 2.0 compatibility
+- Missing docstring of test
+  ([`ba90118`](https://github.com/IMS-Bio2Core-Facility/lta/commit/ba90118d7d799a841550561583f919ad514fb51e))
 
-- **data_handling.py**: Replace `np.NAN` with `np.nan` for NumPy 2.0 compatibility
+### Code Style
 
-### Build System
+- *****: Blacken files
+  ([`d7e806f`](https://github.com/IMS-Bio2Core-Facility/lta/commit/d7e806f89a5dff0372ec136bf68c33e11b48fa52))
 
-- **jaccard.py**: Vendor `boolean-jaccard` module locally; removes the external dependency which was
-  unmaintained and capped at Python < 3.11
+### Features
 
-- **pyproject.toml**: Drop Python 3.8 and 3.9 support; add Python 3.11, 3.12, and 3.13 support
+- Add support python 3.11 to 3.14
+  ([`678495c`](https://github.com/IMS-Bio2Core-Facility/lta/commit/678495c23bf1e5a6d91c61c2e56698f31c7df267))
 
-- **pyproject.toml**: Bump pandas to `^2.0` and numpy to `^2.0`
-
-- **pyproject.toml**: Update dev tooling — flake8, pytest, coverage, black, Sphinx; replace `safety`
-  with `pip-audit`
-
-### Continuous Integration
-
-- **noxfile.py**: Update test matrix from Python 3.9/3.10 to 3.10–3.13; update default session
-  Python to 3.13
-
-- **noxfile.py**: Replace `safety` with `pip-audit` in security session; update `poetry export`
-  flags from `--dev` / `--no-dev` to `--with dev` / `--only main` for Poetry v1.2+ compatibility
-
-- **cicd.yaml**: Add Python 3.11–3.14 to CI setup; upgrade codecov action to v4; gate release job
-  on type check passing; fix CI step display names
+- Temporary remove 3.14 support
+  ([`efdd4af`](https://github.com/IMS-Bio2Core-Facility/lta/commit/efdd4af662dc179e49bb2cd98b68f200eab66435))
 
 
 ## v3.5.3 (2025-11-09)
@@ -85,6 +74,9 @@
 
 - Bumping to 3.5.1
   ([`bfa59e7`](https://github.com/IMS-Bio2Core-Facility/lta/commit/bfa59e7b67c1dd25c1e27d58433e64c34ae34814))
+
+- Switching to new pypi package
+  ([`5347025`](https://github.com/IMS-Bio2Core-Facility/lta/commit/5347025d78bbe3f73b90604fc6843bc4e5fa0014))
 
 
 ## v3.5.1 (2025-10-29)

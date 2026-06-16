@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "LipidTrafficAnalysis"
-version = "3.5.3"
+version = "3.6.0"
 packages=[{include = "lta"}]
 description = "Lipid Traffic Analysis"
 license = "MIT"
@@ -116,6 +116,7 @@ docstring-style = "numpy"
 strictness = "short"
 dictionaries = "en_US,python,technical"
 spellcheck-targets = "comments"
+
 
 [build-system]
 requires = ["setuptools", "poetry-core>=1.0.0"]
